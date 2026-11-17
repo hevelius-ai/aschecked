@@ -225,3 +225,12 @@ def test_mode_is_named_before_the_install_steps() -> None:
     before_install = section.split("**1. Install it**")[0]
     assert "plan mode" in before_install
     assert "Shift+Tab" in before_install
+
+
+# Added in S7 (the walker load proof, 17 Nov): without --all, gh lists the skill and installs nothing when no one can
+# answer its prompt; and a Claude Code session already open did not see a newly installed skill.
+def test_gh_install_needs_no_prompt_and_claude_code_starts_after() -> None:
+    body = flat(text())
+    assert "gh skill install hevelius-ai/aschecked --agent claude-code --all" in body
+    assert "2.94 or later" in body  # `--all` arrived in gh 2.94 (cli/cli release notes)
+    assert "Start Claude Code after installing it" in body
