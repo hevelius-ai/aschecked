@@ -1,7 +1,7 @@
 # AsChecked
 
-> **In development, not ready to use.** The method passed its re-test (see Results), but the release checks are
-> still to come. Please do not install or run it until the first release is tagged.
+> **First release.** Tested in Claude Code with the models in Results. The other ways to run it are packaged for,
+> not yet proven. It lists problems it found; it never says a project is safe.
 
 AsChecked is a read-only review for people who built something with AI. You run it in the AI tool you already use.
 It reads your project and gives you a short report in plain words: at most five things a professional would fix or
@@ -24,6 +24,10 @@ The AI reads your project's files, including any keys written into them, as the 
 The report never shows a key's value: it names a key by its kind, file, line and length.
 
 ## Run it in Claude Code
+
+**The mode it needs:** AsChecked runs in Claude Code's **plan mode**, which keeps Claude reading and planning
+instead of editing your files. You switch it on in step 3 (press Shift+Tab until it shows plan mode). Do not start
+the review in auto-accept or bypass-permissions mode.
 
 **1. Install it** (one of these):
 
