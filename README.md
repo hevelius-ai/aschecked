@@ -75,6 +75,23 @@ really block changes is not yet proven; where nothing blocks them, the limits ar
    [`paste/aschecked-prompt.md`](paste/aschecked-prompt.md) from this repository.
 3. Type: "Run the AsChecked review in the attached prompt file on the attached project."
 
+## Which version it reviews
+
+AsChecked reviews the files in your project folder as they are, on the branch you have open, and the report says
+which branch it reviewed. Choose the branch before you start the review.
+
+- **A finished project:** open your main branch (in a terminal: `git checkout main`). For a chat, download the zip
+  from your main branch.
+- **Work in progress:** open that branch instead (`git checkout <branch-name>`; for a chat, choose the branch on
+  GitHub, then **Code**, then **Download ZIP**). When AsChecked asks what changed recently, say what you are building
+  and what is not built yet. Problems in the part you are still building come in a separate list after the numbered
+  findings, not ranked; the parts you said are not built yet are not listed as numbered findings.
+
+Tried on a small made-up app with a half-built feature and three planted problems in it, one run per model, each at
+extra effort: Claude Opus 5.5, Claude Fable 5.2 and Claude Sonnet 5.5 each found all three, in that separate list. We
+had planned to count only the numbered findings and "Also found" lines; the method puts problems in work you are
+still building in their own list, so we counted that list too, a change made after seeing the results.
+
 ## Other tools
 
 AsChecked is packaged for, not yet proven in, these tools.
