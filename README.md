@@ -36,11 +36,16 @@ the review in auto-accept or bypass-permissions mode.
   `.claude` and `skills` folders if they are missing). To use it in every project, copy it to
   `~/.claude/skills/aschecked` in your home folder instead. On a Mac, Finder hides folders whose names start with
   a dot: press Cmd+Shift+period to show them. Claude Code reads `.claude/skills`, not `.agents/skills`.
-- **With the GitHub CLI** 2.90 or later (`gh skill` is in preview): open a terminal in your project's folder (it
-  must be a git repository) and run `gh skill install hevelius-ai/aschecked --agent claude-code`. To install it for
-  every project instead, add `--scope user`. Without `--agent claude-code` it installs for Copilot.
+- **With the GitHub CLI** 2.94 or later (`gh skill` arrived in 2.90 and is in preview; `--all` needs 2.94): open a terminal in your project's folder (it
+  must be a git repository) and run `gh skill install hevelius-ai/aschecked --agent claude-code --all`. To install it
+  for every project instead, add `--scope user`. Without `--agent claude-code` it installs for Copilot; without
+  `--all`, when nobody can answer its question (for example when your AI tool runs it for you), it lists the skill
+  and installs nothing.
 - **With the skills command** (needs Node.js): open a terminal in your project's folder and run
   `npx skills add hevelius-ai/aschecked`.
+
+Start Claude Code after installing it: in our tests, a Claude Code session that was already open did not see the
+newly installed skill.
 
 **2. Check the instruction files first.** Before the review starts, your tool loads its own instruction files by
 itself: Claude Code loads `CLAUDE.md` (and `AGENTS.md` when there is no `CLAUDE.md`); other tools load files such as
