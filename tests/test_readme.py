@@ -234,3 +234,23 @@ def test_gh_install_needs_no_prompt_and_claude_code_starts_after() -> None:
     assert "gh skill install hevelius-ai/aschecked --agent claude-code --all" in body
     assert "2.94 or later" in body  # `--all` arrived in gh 2.94 (cli/cli release notes)
     assert "Start Claude Code after installing it" in body
+
+
+# Added in S7 (owner's S7-4 and S7-8A, 17 Nov): both uses, a finished project and work in progress, with the
+# evaluation's result and the counting change disclosed.
+def test_which_version_it_reviews() -> None:
+    body = flat(text())
+    assert "## Which version it reviews" in body
+    section = body.split("## Which version it reviews")[1].split(" ## ")[0]
+    for phrase in (
+        "finished project",
+        "Work in progress",
+        "git checkout",
+        "Download ZIP",
+        "separate list",
+        "not ranked",
+        "after seeing the results",
+    ):
+        assert phrase in section, phrase
+    for model in ("Claude Opus 5.5", "Claude Fable 5.2", "Claude Sonnet 5.5"):
+        assert model in section, model
