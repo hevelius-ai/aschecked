@@ -225,6 +225,7 @@ def test_mode_is_named_before_the_install_steps() -> None:
     before_install = section.split("**1. Install it**")[0]
     assert "plan mode" in before_install
     assert "Shift+Tab" in before_install
+    assert "is meant to keep Claude reading" in before_install  # review round 1, finding 3: keep the hedge
 
 
 # Added in S7 (the walker load proof, 17 Nov): without --all, gh lists the skill and installs nothing when no one can
@@ -234,6 +235,9 @@ def test_gh_install_needs_no_prompt_and_claude_code_starts_after() -> None:
     assert "gh skill install hevelius-ai/aschecked --agent claude-code --all" in body
     assert "2.94 or later" in body  # `--all` arrived in gh 2.94 (cli/cli release notes)
     assert "Start Claude Code after installing it" in body
+    # Review round 1, finding 4: on gh 2.94 a run without --all stops with an error; listing arrived in 2.95.
+    assert "it lists the skill and installs nothing" not in body
+    assert "installs nothing" in body
 
 
 # Added in S7 (owner's S7-4 and S7-8A, 17 Nov): both uses, a finished project and work in progress, with the
@@ -244,7 +248,11 @@ def test_which_version_it_reviews() -> None:
     section = body.split("## Which version it reviews")[1].split(" ## ")[0]
     for phrase in (
         "finished project",
+        "main branch",
         "Work in progress",
+        "not built yet",
+        "other branches",
+        "In our test",
         "git checkout",
         "Download ZIP",
         "separate list",
@@ -254,3 +262,12 @@ def test_which_version_it_reviews() -> None:
         assert phrase in section, phrase
     for model in ("Claude Opus 5.5", "Claude Fable 5.2", "Claude Sonnet 5.5"):
         assert model in section, model
+
+
+# Added in review round 1 (finding 5): the run steps point to choosing the branch before the review starts.
+def test_run_steps_point_to_choosing_the_branch() -> None:
+    body = flat(text())
+    claude_step_3 = body.split("**3. Start the review.**")[1].split("**4. Read the report.**")[0]
+    assert "Which version it reviews" in claude_step_3
+    chat_steps = body.split("## Run it in a chat (claude.ai)")[1].split(" ## ")[0]
+    assert "Which version it reviews" in chat_steps

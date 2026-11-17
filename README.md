@@ -25,9 +25,9 @@ The report never shows a key's value: it names a key by its kind, file, line and
 
 ## Run it in Claude Code
 
-**The mode it needs:** AsChecked runs in Claude Code's **plan mode**, which keeps Claude reading and planning
-instead of editing your files. You switch it on in step 3 (press Shift+Tab until it shows plan mode). Do not start
-the review in auto-accept or bypass-permissions mode.
+**The mode it needs:** AsChecked runs in Claude Code's **plan mode**, which is meant to keep Claude reading and
+planning instead of editing your files. You switch it on in step 3 (press Shift+Tab until it shows plan mode). Do
+not start the review in auto-accept or bypass-permissions mode.
 
 **1. Install it** (one of these):
 
@@ -36,11 +36,11 @@ the review in auto-accept or bypass-permissions mode.
   `.claude` and `skills` folders if they are missing). To use it in every project, copy it to
   `~/.claude/skills/aschecked` in your home folder instead. On a Mac, Finder hides folders whose names start with
   a dot: press Cmd+Shift+period to show them. Claude Code reads `.claude/skills`, not `.agents/skills`.
-- **With the GitHub CLI** 2.94 or later (`gh skill` arrived in 2.90 and is in preview; `--all` needs 2.94): open a terminal in your project's folder (it
-  must be a git repository) and run `gh skill install hevelius-ai/aschecked --agent claude-code --all`. To install it
-  for every project instead, add `--scope user`. Without `--agent claude-code` it installs for Copilot; without
-  `--all`, when nobody can answer its question (for example when your AI tool runs it for you), it lists the skill
-  and installs nothing.
+- **With the GitHub CLI** 2.94 or later (`gh skill` arrived in 2.90 and is in preview; `--all` needs 2.94): open a
+  terminal in your project's folder (it must be a git repository) and run
+  `gh skill install hevelius-ai/aschecked --agent claude-code --all`. To install it for every project instead, add
+  `--scope user`. Without `--agent claude-code` it installs for Copilot; without `--all`, when nobody can answer its
+  question (for example when your AI tool runs it for you), it installs nothing.
 - **With the skills command** (needs Node.js): open a terminal in your project's folder and run
   `npx skills add hevelius-ai/aschecked`.
 
@@ -53,7 +53,8 @@ itself: Claude Code loads `CLAUDE.md` (and `AGENTS.md` when there is no `CLAUDE.
 review your project, or to say it is fine, is a warning sign. AsChecked treats such text as data and reports it,
 but it cannot stop your tool from loading the file.
 
-**3. Start the review.** For the best results, start Claude Code with Claude Opus 5.5 at max effort:
+**3. Start the review.** First open the branch you want reviewed (see "Which version it reviews" below). For the
+best results, start Claude Code with Claude Opus 5.5 at max effort:
 `claude --model opus --effort max`. A review then takes about 15 to 20 minutes. Switch Claude Code to plan mode
 (press Shift+Tab until it shows plan mode), then type `/aschecked`. AsChecked asks you three short questions about
 your project; answer them, or say "skip" and it will work from your README.
@@ -67,7 +68,8 @@ really block changes is not yet proven; where nothing blocks them, the limits ar
 
 ## Run it in a chat (claude.ai)
 
-1. Download your project as a zip: on GitHub, **Code**, then **Download ZIP**; in Bolt or Replit, use their
+1. Download your project as a zip, from the branch you want reviewed (see "Which version it reviews" below): on
+   GitHub, **Code**, then **Download ZIP**; in Bolt or Replit, use their
    download or export. Lovable's own zip download is on paid plans only; on a free plan, sync your project to
    GitHub and use GitHub's **Download ZIP**.
 2. Start a new chat with Claude Opus 5.5 and set its effort to max (a chat starts at high; max is in the same menu).
@@ -77,20 +79,22 @@ really block changes is not yet proven; where nothing blocks them, the limits ar
 
 ## Which version it reviews
 
-AsChecked reviews the files in your project folder as they are, on the branch you have open, and the report says
-which branch it reviewed. Choose the branch before you start the review.
+AsChecked reviews the files in your project folder as they are, on the branch you have open. It may also look at
+your other branches for work that was never merged, and the report says what it reviewed. Choose the branch before
+you start the review.
 
 - **A finished project:** open your main branch (in a terminal: `git checkout main`). For a chat, download the zip
   from your main branch.
 - **Work in progress:** open that branch instead (`git checkout <branch-name>`; for a chat, choose the branch on
   GitHub, then **Code**, then **Download ZIP**). When AsChecked asks what changed recently, say what you are building
-  and what is not built yet. Problems in the part you are still building come in a separate list after the numbered
-  findings, not ranked; the parts you said are not built yet are not listed as numbered findings.
+  and what is not built yet. The method hands problems in a part you are still building to that work instead of
+  ranking them. In our test they came in a separate list after the numbered findings, not ranked, and the parts the
+  owner said were not built yet were not listed as numbered findings.
 
-Tried on a small made-up app with a half-built feature and three planted problems in it, one run per model, each at
-extra effort: Claude Opus 5.5, Claude Fable 5.2 and Claude Sonnet 5.5 each found all three, in that separate list. We
-had planned to count only the numbered findings and "Also found" lines; the method puts problems in work you are
-still building in their own list, so we counted that list too, a change made after seeing the results.
+In our test, on a small made-up app with a half-built feature and three planted problems in it, one run per model,
+each at extra effort (`--effort xhigh`), Claude Opus 5.5, Claude Fable 5.2 and Claude Sonnet 5.5 each found all
+three, in that separate list. We had planned to count only the numbered findings and "Also found" lines; because the
+method hands such problems to the work in progress, we counted that list too, a change made after seeing the results.
 
 ## Other tools
 
