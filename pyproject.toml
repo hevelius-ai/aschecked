@@ -1,0 +1,18 @@
+[project]
+name = "aschecked-tools"
+version = "0.0.0"
+description = "Checks and the join script for the AsChecked method (not a package for installing)."
+requires-python = ">=3.12"
+license = "MIT"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+src = ["tools", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
