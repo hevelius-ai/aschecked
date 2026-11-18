@@ -177,9 +177,6 @@ def test_replit_marked_not_tried_needs_a_paid_plan() -> None:
     assert not [b for b in bullets if "Replit" in b and not b.startswith("**Replit:**")]
 
 
-# Added for Fable 5.2's re-test row (17 Nov, D19: every model's result in the table; recommend only models that passed).
-
-
 # Locked tests changed under the owner's decision S7-19 (18 Nov 2026, "A, But we can clearly state that the best one
 # fable 5.2 on medium"): the Results table is now the S7-18 benchmark, so `test_fable_row_has_its_results` (the
 # 15 Nov re-test's Fable row) became `test_s7_19_full_table_has_all_thirteen_settings`, and
@@ -273,7 +270,34 @@ def test_s7_19_safety_checks_for_the_best_setting() -> None:
 
 
 def test_s7_19_no_default_effort_wording() -> None:
-    assert "default effort" not in flat(text()).lower()
+    # Review round 1 (MEDIUM 5): any "default", not only "default effort" (the owner rejected "Fable default").
+    assert not re.search(r"\bdefault\b", flat(text()), re.I)
+
+
+# Review round 1 of PR #4 (MEDIUM 1 to 4): no claim about Fable settings that were not run, the 1,200 words named as
+# the benchmark's cap (the method asks for 900), the Opus extra-high median, and the tie for the best score stated.
+def test_s7_19_fable_extra_high_and_max_not_claimed() -> None:
+    screen = first_screen()
+    assert "With Claude Fable 5.2 and Claude Opus 5.5" not in screen
+    assert "(extra-high and max were not run)" in screen
+
+
+def test_s7_19_word_cap_is_the_benchmarks_not_the_methods() -> None:
+    body = flat(text())
+    assert "method's limit of 1,200" not in body
+    assert "the benchmark's 1,200-word cap" in results()
+    assert "at most 900 words" in results()
+
+
+def test_s7_19_opus_extra_high_median_minutes() -> None:
+    section = results_raw().split("**All 13 settings**")[1].split("\n\n")[1]
+    rows = {r[0]: r for r in table_rows(section)[1:]}
+    assert rows["Claude Opus 5.5, extra-high"][5] == "7"
+    assert "about four and a half times" in results()
+
+
+def test_s7_19_tie_for_best_is_stated() -> None:
+    assert "Claude Fable 5.2 at high effort tied it at 17" in results()
 
 
 # Added in S6 (release review finding 1): every tracked file, not only the README, and names held as hashes only.
