@@ -76,7 +76,7 @@ Type and stakes: one line. Told by you / inferred: one line each.
 Also found (only when there are more; up to five, one line each):
 - <The problem, as the owner would feel it>: file:line, or the search that found nothing.
 
-Work in progress, not ranked (only for an area the owner says is being built,
+Work in progress, not ranked (only for an area the owner says is being built or reworked,
 or the work on a branch that is not the main branch; up to five, one line each):
 - <The problem>: file:line, or the search that found nothing.
 
