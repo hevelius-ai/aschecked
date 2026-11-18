@@ -290,3 +290,20 @@ def test_how_to_remove_it() -> None:
 
 def test_npx_route_names_the_agent_and_needs_no_prompt() -> None:
     assert "`npx skills add hevelius-ai/aschecked -a claude-code -y`" in flat(text())
+
+
+# Added for the owner's S7-16 (18 Nov 2026): the README states what the git safety covers and where it stops.
+def test_git_settings_limit_is_stated() -> None:
+    body = flat(text())
+    assert "**Git settings:**" in body
+    limit = body.split("**Git settings:**")[1].split(" ## ")[0][:900]
+    for phrase in (
+        "can make git run a program",
+        "20 setups",
+        "fresh clone",
+        "Git has more settings than we tested",
+        "on purpose",
+        "outside what AsChecked covers",
+        "a copy you cloned yourself",
+    ):
+        assert phrase in limit, phrase
