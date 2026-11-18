@@ -24,9 +24,9 @@ jobs:
         with:
           python-version: "3.12"
       - name: Pin pip itself by hash
-        run: python -m pip install --require-hashes --only-binary :all: -r requirements-pip.txt
+        run: 'python -m pip install --require-hashes --only-binary :all: -r requirements-pip.txt'
       - name: Install hash-pinned test tools (wheels only, no source builds)
-        run: python -m pip install --require-hashes --only-binary :all: --ignore-installed -r requirements-dev.txt
+        run: 'python -m pip install --require-hashes --only-binary :all: --ignore-installed -r requirements-dev.txt'
       - name: Lint
         run: python -m ruff check tools tests
       - name: Format

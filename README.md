@@ -15,9 +15,9 @@ problems it found in what it checked.
 effort setting found 16 of 19 known problems in four test projects, including the most serious one in each, and so
 did Claude Fable 5.2 at its default effort. Claude Opus 5.5 at its default effort found 11, and Claude Sonnet 5.5
 found 8 (see Results). Claude Sonnet 5.5 stopped early: it took about a fifth as many reading steps as Claude Opus
-5.5 at max effort before writing its report. In our earlier tests, weaker, older or free models missed serious problems and told the owner
-that flawed access rules were strong. Use Claude Opus 5.5 at max effort or Claude Fable 5.2 where you can, and treat
-a report from a free consumer chat model with caution.
+5.5 at max effort before writing its report. In our earlier tests, weaker, older or free models missed serious
+problems and told the owner that flawed access rules were strong. Use Claude Opus 5.5 at max effort or Claude Fable
+5.2 where you can, and treat a report from a free consumer chat model with caution.
 
 ## What the AI sees
 

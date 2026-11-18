@@ -1,6 +1,6 @@
 # Scans
 
-Which scanners to suggest under "Scans to run yourself", by stack and platform, and the traps in reading their output. Run a scanner during the review only if it is already installed, from outside the project, as SKILL.md says; never install one.
+Which scanners to suggest under "Scans to run yourself", by stack and platform, and the traps in reading their output. Run a scanner during the review only if it is already installed, where SKILL.md step 6 says; never install one.
 
 ## Suggest by stack and platform
 
