@@ -164,6 +164,19 @@ def test_every_other_tool_is_marked_not_yet_proven() -> None:
         assert "not yet proven" in flat(bullet).lower(), flat(bullet)[:60]
 
 
+# Added for the owner's S7-15 B (18 Nov 2026): Replit is marked not tried, because its skills and Plan mode need a
+# paid plan, and Replit users are pointed to the chat route.
+def test_replit_marked_not_tried_needs_a_paid_plan() -> None:
+    other = re.search(r"^## Other tools\n(.*?)(?=^## |\Z)", text(), re.M | re.S)
+    assert other, "no '## Other tools' section"
+    bullets = [flat(b) for b in re.split(r"^- ", other.group(1), flags=re.M)[1:]]
+    replit = [b for b in bullets if b.startswith("**Replit:**")]
+    assert len(replit) == 1, "no bullet of its own for Replit"
+    for phrase in ("not tried (needs a paid plan)", "Plan mode", "Run it in a chat"):
+        assert phrase in replit[0], phrase
+    assert not [b for b in bullets if "Replit" in b and not b.startswith("**Replit:**")]
+
+
 # Added for Fable 5.2's re-test row (17 Nov, D19: every model's result in the table; recommend only models that passed).
 
 
