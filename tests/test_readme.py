@@ -262,3 +262,31 @@ def test_run_steps_point_to_choosing_the_branch() -> None:
     assert "Which version it reviews" in claude_step_3
     chat_steps = body.split("## Run it in a chat (claude.ai)")[1].split(" ## ")[0]
     assert "Which version it reviews" in chat_steps
+
+
+# Added in S7-14 (owner, 18 Nov 2026; design R-a and R-e): Sonnet stopping early, how to remove AsChecked, and the
+# npx route in the form proven on 18 Nov (skills 1.9.0: -a claude-code -y installs into .claude/skills and
+# `npx skills remove aschecked` removes it).
+def test_sonnet_stopped_early_is_stated() -> None:
+    model_paragraph = flat(text()).split("**The AI model and its effort setting matter more than the tool.**")[1]
+    model_paragraph = model_paragraph.split(" ## ")[0]
+    assert "Claude Sonnet 5.5 stopped early" in model_paragraph
+
+
+def test_how_to_remove_it() -> None:
+    body = flat(text())
+    assert "**To remove AsChecked:**" in body
+    remove = body.split("**To remove AsChecked:**")[1].split("**2.")[0]
+    for phrase in (
+        "delete the `aschecked` folder",
+        ".claude/skills/aschecked",
+        "~/.claude/skills/aschecked",
+        "no uninstall command",
+        "`npx skills remove aschecked`",
+        "skills-lock.json",
+    ):
+        assert phrase in remove, phrase
+
+
+def test_npx_route_names_the_agent_and_needs_no_prompt() -> None:
+    assert "`npx skills add hevelius-ai/aschecked -a claude-code -y`" in flat(text())
