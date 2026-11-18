@@ -341,3 +341,34 @@ def test_scanner_places_and_no_unmasked_history_read() -> None:
     assert (
         "Never use `log -p` or `show` on a file the secret search flagged or the gitleaks history scan named" in limits
     )
+
+
+# Added in PR #2 review round 2 (N1, proven 18 Nov: a partial clone's lazy fetch ran a planted SSH command twice for
+# `show`, `log -p` and `log -S`, none with --no-lazy-fetch; `diff.submodule=diff` ran a submodule's planted external
+# diff once for `show` and `log -p`, none with diff.submodule=short).
+def test_m6_no_lazy_fetch_and_short_submodule_diffs() -> None:
+    limits = flat(section("Hard limits"))
+    assert f"`{GIT_PREFIX}`, then `--no-lazy-fetch -c diff.submodule=short`" in limits
+    assert 'if git refuses `--no-lazy-fetch`, run no git and say so under "Not checked"' in limits
+    steps = flat(section("Steps"))
+    assert 'Skip the history scan, and say so under "Not checked", when `.git/config`' in steps
+    skip_rule = steps.split("Skip the history scan", 1)[1][:400]
+    for setting in ("`promisor`", "`submodule`", "`include`", "`.gitmodules`"):
+        assert setting in skip_rule, setting
+
+
+# Added in PR #2 review round 2 (N2): no unmasked read of a commit or range that changes a flagged file.
+def test_no_unmasked_read_of_a_commit_that_changes_a_flagged_file() -> None:
+    limits = flat(section("Hard limits"))
+    assert "or on a commit or range that changes one (list its files first with `--name-only`)" in limits
+    assert 'when it did not run, say so under "Not checked"' in limits
+
+
+# Added in PR #2 review round 2 (N3): any log or show written out in full carries all three switches.
+def test_written_log_and_show_carry_every_switch() -> None:
+    for path in [SKILL, *sorted((SKILL_DIR / "references").glob("*.md"))]:
+        for command in re.findall(r"`(git -c [^`]*)`", path.read_text(encoding="utf-8")):
+            words = command.split()
+            if "log" in words or "show" in words:
+                for switch in ("--no-show-signature", "--no-textconv", "--no-ext-diff", "--no-lazy-fetch"):
+                    assert switch in words, f"{path.name}: {command} lacks {switch}"
