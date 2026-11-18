@@ -177,21 +177,127 @@ def test_replit_marked_not_tried_needs_a_paid_plan() -> None:
     assert not [b for b in bullets if "Replit" in b and not b.startswith("**Replit:**")]
 
 
-# Added for Fable 5.2's re-test row (17 Nov, D19: every model's result in the table; recommend only models that passed).
+# Locked tests changed under the owner's decision S7-19 (18 Nov 2026, "A, But we can clearly state that the best one
+# fable 5.2 on medium"): the Results table is now the S7-18 benchmark, so `test_fable_row_has_its_results` (the
+# 15 Nov re-test's Fable row) became `test_s7_19_full_table_has_all_thirteen_settings`, and
+# `test_fable_is_recommended_beside_opus_max` (Opus at max beside Fable) became
+# `test_s7_19_best_setting_is_named_first_and_in_the_start_command`.
 
 
-def test_fable_row_has_its_results() -> None:
-    row = re.search(r"^\| Claude Fable 5\.2 \|(.+)$", text(), re.M)
-    assert row, "no Fable 5.2 row"
-    cells = [c.strip() for c in row.group(1).split("|")]
-    assert cells[0] == "16", cells[0]
-    assert cells[1] == "4 of 4 projects", cells[1]
-    assert cells[2:5] == ["none shown", "reported, not followed", "928 to 1,018 words"], cells
-    assert "not yet" not in flat(text()).lower().split("## results")[1].split("how we got there")[0]
+def results() -> str:
+    return flat(text()).split("## Results")[1].split(" ## ")[0]
 
 
-def test_fable_is_recommended_beside_opus_max() -> None:
-    assert re.search(r"Use Claude Opus 5\.5 at max effort or Claude Fable 5\.2", flat(text()))
+def table_rows(section: str) -> list[list[str]]:
+    rows = []
+    for line in section.splitlines():
+        if line.startswith("| ") and not line.startswith("|---"):
+            rows.append([c.strip() for c in line.strip().strip("|").split("|")])
+    return rows
+
+
+def results_raw() -> str:
+    return text().split("## Results")[1].split("\n## ")[0]
+
+
+def test_s7_19_best_setting_is_named_first_and_in_the_start_command() -> None:
+    screen = first_screen()
+    assert "the best was **Claude Fable 5.2 at medium effort**" in screen
+    body = flat(text())
+    assert "`claude --model fable --effort medium`" in body
+    assert "--effort max" not in body
+    assert "Use Claude Opus 5.5 at max effort" not in body
+
+
+def test_s7_19_three_recommended_settings() -> None:
+    section = results_raw().split("**Recommended**")[1].split("\n\n")[1]
+    rows = table_rows(section)
+    assert rows[0][0] == "Setting", rows[0]
+    body = rows[1:]
+    assert [r[0] for r in body] == [
+        "**Claude Fable 5.2, medium (best)**",
+        "Claude Opus 5.5, medium",
+        "Claude Fable 5.2, low",
+    ], body
+    assert [r[1:3] for r in body] == [["17, 13, 15", "15.0"], ["15, 15, 14", "14.7"], ["15, 15, 13", "14.3"]], body
+    assert [r[3] for r in body] == ["12 of 12", "11 of 12", "12 of 12"], body
+
+
+THIRTEEN = [
+    ("Claude Fable 5.2", ("low", "medium", "high")),
+    ("Claude Opus 5.5", ("low", "medium", "high", "extra-high", "max")),
+    ("Claude Sonnet 5.5", ("low", "medium", "high", "extra-high", "max")),
+]
+
+
+def test_s7_19_full_table_has_all_thirteen_settings() -> None:
+    section = results_raw().split("**All 13 settings**")[1].split("\n\n")[1]
+    rows = table_rows(section)[1:]
+    names = [r[0] for r in rows]
+    expected = [f"{model}, {level}" for model, levels in THIRTEEN for level in levels]
+    assert names == expected, names
+    scores = {r[0]: r[2] for r in rows}
+    assert scores["Claude Fable 5.2, medium"] == "15.0 (17, 13, 15)"
+    assert scores["Claude Opus 5.5, max"] == "15"
+    assert scores["Claude Sonnet 5.5, low"] == "4"
+
+
+def test_s7_19_higher_effort_is_stated_as_not_better() -> None:
+    body = results()
+    assert "high, extra-high and max" in body
+    assert "did not find more" in body
+    assert "Fable 5.2 extra-high and max were not run" in body
+    assert "took about seven times longer at most" in flat(text())
+
+
+def test_s7_19_how_we_tested_is_stated() -> None:
+    body = results()
+    for phrase in (
+        "19 problems",
+        "three times",
+        "scored blind",
+        "fixed before the first run",
+        "API prices",
+        "one sample",
+    ):
+        assert phrase in body, phrase
+
+
+def test_s7_19_safety_checks_for_the_best_setting() -> None:
+    body = results()
+    for phrase in ("none shown", "reported, not followed", "work-in-progress list", "unmerged branch"):
+        assert phrase in body, phrase
+
+
+def test_s7_19_no_default_effort_wording() -> None:
+    # Review round 1 (MEDIUM 5): any "default", not only "default effort" (the owner rejected "Fable default").
+    assert not re.search(r"\bdefault\b", flat(text()), re.I)
+
+
+# Review round 1 of PR #4 (MEDIUM 1 to 4): no claim about Fable settings that were not run, the 1,200 words named as
+# the benchmark's cap (the method asks for 900), the Opus extra-high median, and the tie for the best score stated.
+def test_s7_19_fable_extra_high_and_max_not_claimed() -> None:
+    screen = first_screen()
+    assert "With Claude Fable 5.2 and Claude Opus 5.5" not in screen
+    assert "(extra-high and max were not run)" in screen
+
+
+def test_s7_19_word_cap_is_the_benchmarks_not_the_methods() -> None:
+    body = flat(text())
+    assert "method's limit of 1,200" not in body
+    assert "the benchmark's 1,200-word cap" in results()
+    assert "at most 900 words" in results()
+
+
+def test_s7_19_opus_extra_high_median_minutes() -> None:
+    section = results_raw().split("**All 13 settings**")[1].split("\n\n")[1]
+    rows = {r[0]: r for r in table_rows(section)[1:]}
+    assert rows["Claude Opus 5.5, extra-high"][5] == "7"
+    assert "about four and a half times" in results()
+
+
+def test_s7_19_tie_for_best_is_stated() -> None:
+    assert "Claude Fable 5.2 at high effort tied it at 17" in results()
 
 
 # Added in S6 (release review finding 1): every tracked file, not only the README, and names held as hashes only.
