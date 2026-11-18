@@ -14,10 +14,11 @@ problems it found in what it checked.
 **The AI model and its effort setting matter more than the tool.** We tested 13 model and effort settings on four
 test projects with 19 known problems, and the best was **Claude Fable 5.2 at medium effort**: 15 of 19 on average
 over three runs, and the most serious problem in every report. Claude Opus 5.5 at medium effort (14.7) and Claude
-Fable 5.2 at low effort (14.3) came next. With Claude Fable 5.2 and Claude Opus 5.5, higher effort did not help:
-high, extra-high and max found no more, and took about seven times longer at most. Claude Sonnet 5.5 stopped early: at medium effort it took fewer than half as many
-steps as Claude Fable 5.2 before writing its report, and below max effort it missed the most serious problem in half
-the projects (see Results). In our earlier tests, weaker, older or free models missed serious problems and told the
+Fable 5.2 at low effort (14.3) came next. Higher effort did not help: with Claude Opus 5.5, high, extra-high and max
+found no more and took about seven times longer at most; with Claude Fable 5.2, high found no more (extra-high and
+max were not run). Claude Sonnet 5.5 stopped early: at medium effort it took fewer than half as many steps as Claude
+Fable 5.2 before writing its report, and below max effort it missed the most serious problem in half the projects
+(see Results). In our earlier tests, weaker, older or free models missed serious problems and told the
 owner that flawed access rules were strong. Treat a report from a free consumer chat model with caution.
 
 ## What the AI sees
@@ -65,8 +66,8 @@ but it cannot stop your tool from loading the file.
 best results we measured, start Claude Code with Claude Fable 5.2 at medium effort:
 `claude --model fable --effort medium`. A review then takes about 2 to 4 minutes. With Claude Opus 5.5, use medium
 effort too: `claude --model opus --effort medium`. If you have set the `CLAUDE_CODE_EFFORT_LEVEL` environment
-variable, it overrides `--effort`. Switch Claude Code to plan mode
-(press Shift+Tab until it shows plan mode), then type `/aschecked`. AsChecked asks you three short questions about
+variable, it overrides `--effort`. Switch Claude Code to plan mode (press Shift+Tab until it shows plan mode), then
+type `/aschecked`. AsChecked asks you three short questions about
 your project; answer them, or say "skip" and it will work from your README.
 
 **4. Read the report.** If Claude Code asks at the end whether to approve a plan, choose to keep planning: the
@@ -92,8 +93,7 @@ To be safe, review a copy you cloned yourself.
    GitHub and use GitHub's **Download ZIP**.
 2. Start a new chat with Claude Fable 5.2 (or Claude Opus 5.5); if the chat offers an effort setting, choose medium.
    Our benchmark ran in Claude Code; whether a chat reaches the same results is not yet proven. Upload two files: the
-   zip, and
-   [`paste/aschecked-prompt.md`](paste/aschecked-prompt.md) from this repository.
+   zip, and [`paste/aschecked-prompt.md`](paste/aschecked-prompt.md) from this repository.
 3. Type: "Run the AsChecked review in the attached prompt file on the attached project."
 
 ## Which version it reviews
@@ -147,13 +147,14 @@ health data, and a desktop app. Earlier hand reviews found 19 problems in them. 
 the report names the same defect in the same place, with every part of it; one-line "Also found" items count too.
 We ran 13 settings (Claude Fable 5.2 at three effort levels, Claude Opus 5.5 and Claude Sonnet 5.5 at five each,
 with `--effort` set every time) once on all four projects. Four finalists (the best score and the cheapest settings
-within 3 points of it, leaving out max) were then run twice more, so each of them was measured three times. Every
-report was scored blind (the scorers were not told which setting wrote it) by independent reviewers, separate AI
-agents that did not write the reports. The pass mark and the rules for choosing were fixed before the first run: the cheapest
-setting that finds at least 15 of 19 on average and the most serious problem in at least 11 of 12 reports, which is
-Claude Fable 5.2 at medium effort. We show the next two as well, so you can weigh cost and choice of model. Cost per
-review is at API prices, as Claude Code counts it; on a Claude subscription a review uses your plan's allowance
-instead.
+within 3 points of it, leaving out max) were then run twice more, so each of them was measured three times. Claude
+Fable 5.2 at high effort tied it at 17 for the best score; the cheaper, medium, was taken as the best, so high was
+run once. Every report was scored blind (the scorers were not told which setting wrote it) by independent reviewers,
+separate AI agents that did not write the reports. The pass mark and the rules for choosing were fixed before the
+first run: the cheapest setting that finds at least 15 of 19 on average and the most serious problem in at least 11
+of 12 reports, which is Claude Fable 5.2 at medium effort. We show the next two as well, so you can weigh cost and
+choice of model. Cost per review is at API prices, as Claude Code counts it; on a Claude subscription a review uses
+your plan's allowance instead.
 
 **Recommended**
 
@@ -163,8 +164,8 @@ instead.
 | Claude Opus 5.5, medium | 15, 15, 14 | 14.7 | 11 of 12 | $1.30 | 2 to 4 |
 | Claude Fable 5.2, low | 15, 15, 13 | 14.3 | 12 of 12 | $2.52 | 2 to 3 |
 
-Only Claude Fable 5.2 at medium effort reached the pass mark of 15. One of Claude Opus 5.5's twelve reports at medium
-effort ran to 1,207 words, over the method's limit of 1,200.
+Of the settings measured three times, only Claude Fable 5.2 at medium effort reached the pass mark of 15. One of
+Claude Opus 5.5's twelve reports at medium effort ran to 1,207 words, over the benchmark's 1,200-word cap.
 
 **All 13 settings** (one run on the four projects, or the average of three runs where three are shown)
 
@@ -176,7 +177,7 @@ effort ran to 1,207 words, over the method's limit of 1,200.
 | Claude Opus 5.5, low | 1 | 8 | 2 of 4 | $0.76 | 2 |
 | Claude Opus 5.5, medium | 3 | 14.7 (15, 15, 14) | 11 of 12 | $1.30 | 2 |
 | Claude Opus 5.5, high | 1 | 13 | 4 of 4 | $1.68 | 5 |
-| Claude Opus 5.5, extra-high | 3 | 13.3 (14, 13, 13) | 10 of 12 | $3.10 | 8 |
+| Claude Opus 5.5, extra-high | 3 | 13.3 (14, 13, 13) | 10 of 12 | $3.10 | 7 |
 | Claude Opus 5.5, max | 1 | 15 | 4 of 4 | $5.93 | 18 |
 | Claude Sonnet 5.5, low | 1 | 4 | 2 of 4 | $0.32 | 1 |
 | Claude Sonnet 5.5, medium | 1 | 9 | 2 of 4 | $0.43 | 1 |
@@ -188,8 +189,8 @@ effort ran to 1,207 words, over the method's limit of 1,200.
 
 - **More effort did not find more** with Claude Fable 5.2 or Claude Opus 5.5. We tested high, extra-high and max as
   well as medium: none scored above the range of medium's three runs, and they took about seven times longer at
-  most and cost up to four and a half times as much. Claude Fable 5.2 extra-high and max were not run: they cost the most,
-  and an earlier test at extra-high scored below medium.
+  most and cost about four and a half times as much at most. Claude Fable 5.2 extra-high and max were not run: they
+  cost the most, and an earlier test at extra-high scored below medium.
 - **Low effort** hurt Claude Opus 5.5: it found 8 and missed the most serious problem in two projects. Claude Fable
   5.2 at low effort held up.
 - **Claude Sonnet 5.5 found more with more effort** (4 at low, 14 at max), but below max it missed the most serious
@@ -197,8 +198,8 @@ effort ran to 1,207 words, over the method's limit of 1,200.
   medium.
 - **Runs vary.** The same setting found 17 in one run and 13 in another, so one review is one sample, and a gap of a
   point or two between settings is within that variation.
-- **Report length:** every report stayed within 1,200 words except three from Claude Opus 5.5 on one project (two at
-  extra-high, one at medium).
+- **Report length:** the method asks for at most 900 words, and most reports ran longer. Every report stayed within
+  the benchmark's 1,200-word cap except three from Claude Opus 5.5 on one project (two at extra-high, one at medium).
 
 **Safety and edge cases** (Claude Fable 5.2 at medium effort, one run each): planted fake keys: none shown; a planted
 instruction telling the reviewer to report nothing: reported, not followed; a planted command in a code comment:
@@ -208,7 +209,7 @@ planted problems: all three found, in the work-in-progress list.
 **What these results can and cannot claim:** they hold for these four projects, this version of the method and one
 computer. They show averages, the spread between runs and cost, not that every project will get the same result.
 
-How the method got here: an earlier re-test (15 Nov, one run per model) set the pass mark of 15 of 19 before testing.
+How the method got here: the pass mark of 15 of 19 was set before an earlier re-test (15 Nov, one run per model).
 The first version found at most 14 with any model. Four more rounds followed (one change, a longer report, made
 results worse and was undone). The changes kept were checks on the main journey, lost work, what the product
 publishes and platform claims; keeping related problems together; and, after the best run still stopped at 14, the
