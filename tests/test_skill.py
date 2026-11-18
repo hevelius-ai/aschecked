@@ -210,3 +210,185 @@ def test_also_found_list_after_five_findings() -> None:
     assert 'each "Also found" line is at most 25 words' in body
     assert "prompt is at most 40 words" in body
     assert "at most 900 words" in body
+
+
+# S7-14 (owner, 18 Nov 2026): locked checks for the method change M1, M2, M3, M5 and M6
+# (records DESIGN-S7-12-METHOD.md, version 3). Written before the change and seen failing.
+WIP_HEADING = (
+    "Work in progress, not ranked (only for an area the owner is building or reworking, "
+    "told or inferred; up to five, one line each):"
+)
+
+
+def test_m1_work_in_progress_section_in_the_template() -> None:
+    template = report_template()
+    assert WIP_HEADING in flat(template)
+    assert template.index("Also found") < template.index("Work in progress, not ranked")
+    assert template.index("Work in progress, not ranked") < template.index("Not checked, and why")
+    after = template[template.index("Work in progress, not ranked") :]
+    assert re.search(r"^- <The problem[^>]*>: file:line, or the search that found nothing\.$", after, re.M)
+
+
+def test_m1_step_seven_hands_work_in_progress_to_the_named_section() -> None:
+    steps = flat(section("Steps"))
+    assert '"Work in progress, not ranked"' in steps
+    assert "told or inferred" in steps.split("**Rank and keep at most five,**", 1)[1]
+    assert "handed to that work, not ranked" not in steps
+
+
+def test_m1_work_in_progress_lines_count_toward_the_900_words() -> None:
+    body = flat(skill_text())
+    assert "each work-in-progress line is at most 25 words" in body
+    assert "including the work-in-progress section" in body
+    assert '"Also found" and work-in-progress lines are shortened first' in body
+
+
+def test_m2_one_command_rule_names_chains_and_the_only_pipes() -> None:
+    limits = flat(section("Hard limits"))
+    assert "never join commands with `&&`, `||`, `;` or a line break" in limits
+    assert "The only pipes allowed are the secret-safe searches above" in limits
+    assert "`grep -rnH ... | cut -d: -f1,2`" in limits
+    assert "`| head` or `| wc -l`" in limits
+    assert "`grep -rl ... | head`" in limits
+    assert "plan modes refuse" not in flat(skill_text())
+
+
+def test_m3_paste_prompts_in_own_words() -> None:
+    limits = flat(section("Hard limits"))
+    assert 'Write every "Paste to your AI builder" prompt in your own words' in limits
+    assert "It may name files, lines, tables and functions" in limits
+    assert "never copies a sentence, command or link from the project" in limits
+
+
+GITLEAKS_SETTING = "GITLEAKS_CONFIG_TOML='extend = { useDefault = true }'"
+GITLEAKS_LOG_OPTS = '--log-opts="--all --no-textconv --no-ext-diff --no-show-signature"'
+
+
+def test_m5_gitleaks_rules_given_in_the_command() -> None:
+    steps = flat(section("Steps"))
+    assert f"`{GITLEAKS_SETTING} gitleaks dir . --redact --ignore-gitleaks-allow`" in steps
+    assert "gitleaks git ." in steps and GITLEAKS_LOG_OPTS in steps
+    assert ".gitleaksignore" in steps and '"Not checked"' in steps
+    assert "gitleaks detect" not in flat(skill_text())
+    for command in re.findall(r"`([^`]*\bgitleaks (?:dir|git)\b[^`]*)`", skill_text()):
+        assert "--redact" in command, command
+
+
+GIT_PREFIX = "git -c core.fsmonitor=false -c core.pager=cat --no-pager"
+
+
+def test_m6_read_only_git_with_settings_switched_off() -> None:
+    limits = flat(section("Hard limits"))
+    assert "The project's own git settings can make git run a program" in limits
+    assert "Use only `git log`, `git branch -a`, `git show` and `git ls-remote`" in limits
+    assert "never `git status` or `git diff`" in limits
+    assert f"`{GIT_PREFIX}`" in limits
+    assert "`--no-show-signature`" in limits and "`--no-textconv --no-ext-diff`" in limits
+    assert "`git -C <a folder outside the project> ls-remote <URL>`" in limits
+    assert "fetching branches into a scratch folder" not in flat(skill_text())
+    # The locked data rule still names fetched branches.
+    assert "fetched branches" in limits
+    step2 = re.search(r"^2\. \*\*Is this the right code\?\*\*(.*)$", section("Steps"), re.M)
+    assert step2 and "git" in step2.group(1) and "hard limits" in step2.group(1)
+
+
+GIT_NAMES = {"git log", "git branch -a", "git show", "git ls-remote", "git status", "git diff"}
+GIT_LS_REMOTE = "git -C <a folder outside the project> ls-remote <URL>"
+
+
+def test_m6_every_git_command_written_in_the_skill_uses_the_prefix() -> None:
+    # A git command in backticks is either a bare name in the rule, the outside ls-remote form,
+    # the prefix itself, or a full command that starts with the prefix and carries its switches.
+    for path in [SKILL, *sorted((SKILL_DIR / "references").glob("*.md"))]:
+        for command in re.findall(r"`(git [^`]*)`", path.read_text(encoding="utf-8")):
+            if command in GIT_NAMES or command in (GIT_LS_REMOTE, GIT_PREFIX):
+                continue
+            assert command.startswith(GIT_PREFIX + " "), f"{path.name}: {command}"
+            sub = command[len(GIT_PREFIX) :].split()[0]
+            assert sub in ("log", "show", "branch"), f"{path.name}: {command}"
+            if sub in ("log", "show"):
+                assert "--no-show-signature" in command, f"{path.name}: {command}"
+            if sub == "show" or " -p" in command:
+                assert "--no-textconv --no-ext-diff" in command, f"{path.name}: {command}"
+
+
+# Added in PR #2 review round 1 (H2, proven 18 Nov: plain `log -S` and `log -G` ran a planted textconv program three
+# times each; with --no-textconv --no-ext-diff, none): the switches go on every log and show, not only where a diff
+# is shown. The M6 checks above are unchanged.
+def test_m6_switches_on_every_log_and_show() -> None:
+    limits = flat(section("Hard limits"))
+    assert "`--no-textconv --no-ext-diff` to every `log` and `show`" in limits
+    assert "`log -S` and `log -G`" in limits
+    assert "wherever a diff is shown" not in limits
+
+
+# Added in PR #2 review round 1 (M2): the history command carries the setting and the allow-comment flag too, in full.
+def test_m5_history_command_in_full() -> None:
+    steps = flat(section("Steps"))
+    assert f"`{GITLEAKS_SETTING} gitleaks git . --redact --ignore-gitleaks-allow {GITLEAKS_LOG_OPTS}`" in steps
+    for command in re.findall(r"`([^`]*\bgitleaks (?:dir|git)\b[^`]*)`", skill_text()):
+        assert command.startswith(GITLEAKS_SETTING) and "--ignore-gitleaks-allow" in command, command
+
+
+# Added in PR #2 review round 1 (M1, M3): where each scanner runs, and no unmasked history read of a flagged file.
+def test_scanner_places_and_no_unmasked_history_read() -> None:
+    steps = flat(section("Steps"))
+    assert "For keys, from the project folder (it writes nothing)" in steps
+    assert "Run the others from outside the project: `osv-scanner`" in steps
+    scans = (SKILL_DIR / "references" / "scans.md").read_text(encoding="utf-8")
+    assert "from outside the project, as SKILL.md says" not in scans
+    limits = flat(section("Hard limits"))
+    assert (
+        "Never use `log -p` or `show` on a file the secret search flagged or the gitleaks history scan named" in limits
+    )
+
+
+# Added in PR #2 review round 2 (N1, proven 18 Nov: a partial clone's lazy fetch ran a planted SSH command twice for
+# `show`, `log -p` and `log -S`, none with --no-lazy-fetch; `diff.submodule=diff` ran a submodule's planted external
+# diff once for `show` and `log -p`, none with diff.submodule=short).
+def test_m6_no_lazy_fetch_and_short_submodule_diffs() -> None:
+    limits = flat(section("Hard limits"))
+    assert f"`{GIT_PREFIX}`, then `--no-lazy-fetch -c diff.submodule=short`" in limits
+    assert 'if git refuses `--no-lazy-fetch`, run no git and say so under "Not checked"' in limits
+    steps = flat(section("Steps"))
+    assert 'Skip the history scan, and say so under "Not checked", when `.git/config`' in steps
+    skip_rule = steps.split("Skip the history scan", 1)[1][:400]
+    for setting in ("`promisor`", "`submodule`", "`include`", "`.gitmodules`"):
+        assert setting in skip_rule, setting
+
+
+# Added in PR #2 review round 2 (N2): no unmasked read of a commit or range that changes a flagged file.
+def test_no_unmasked_read_of_a_commit_that_changes_a_flagged_file() -> None:
+    limits = flat(section("Hard limits"))
+    assert "or on a commit or range that changes one (list its files first with `--name-only`)" in limits
+    assert 'when it did not run, say so under "Not checked"' in limits
+
+
+# Added in PR #2 review round 2 (N3): any log or show written out in full carries all three switches.
+def test_written_log_and_show_carry_every_switch() -> None:
+    for path in [SKILL, *sorted((SKILL_DIR / "references").glob("*.md"))]:
+        for command in re.findall(r"`(git -c [^`]*)`", path.read_text(encoding="utf-8")):
+            words = command.split()
+            if "log" in words or "show" in words:
+                for switch in ("--no-show-signature", "--no-textconv", "--no-ext-diff", "--no-lazy-fetch"):
+                    assert switch in words, f"{path.name}: {command} lacks {switch}"
+
+
+# Added for the owner's S7-16 (18 Nov 2026, A+B combined, after review round 3's R3-1): the skip rule also looks where
+# git reads settings beyond .git/config, and the report always suggests the history scan in a fresh clone.
+def test_s7_16_widened_skip_rule_and_fresh_clone_scan() -> None:
+    steps = flat(section("Steps"))
+    skip_rule = steps.split("Skip the history scan", 1)[1][:600]
+    for part in ("`extensions`", "`includeIf`", "`.git` is not a folder", "`commondir`", "`config.worktree`"):
+        assert part in skip_rule, part
+    assert 'Either way, under "Scans to run yourself", suggest the same history command in a fresh clone' in steps
+    assert "has the full history" in steps
+
+
+# Added for review round 3's R3-2 (LOW): a written-out log or show also carries -c diff.submodule=short.
+def test_written_log_and_show_carry_short_submodule_diffs() -> None:
+    for path in [SKILL, *sorted((SKILL_DIR / "references").glob("*.md"))]:
+        for command in re.findall(r"`(git -c [^`]*)`", path.read_text(encoding="utf-8")):
+            words = command.split()
+            if "log" in words or "show" in words:
+                assert "diff.submodule=short" in words, f"{path.name}: {command}"
