@@ -14,7 +14,8 @@ problems it found in what it checked.
 **The AI model and its effort setting matter more than the tool.** In our re-test, Claude Opus 5.5 at its maximum
 effort setting found 16 of 19 known problems in four test projects, including the most serious one in each, and so
 did Claude Fable 5.2 at its default effort. Claude Opus 5.5 at its default effort found 11, and Claude Sonnet 5.5
-found 8 (see Results). In our earlier tests, weaker, older or free models missed serious problems and told the owner
+found 8 (see Results). Claude Sonnet 5.5 stopped early: it took about a fifth as many reading steps as Claude Opus
+5.5 at max effort before writing its report. In our earlier tests, weaker, older or free models missed serious problems and told the owner
 that flawed access rules were strong. Use Claude Opus 5.5 at max effort or Claude Fable 5.2 where you can, and treat
 a report from a free consumer chat model with caution.
 
@@ -42,10 +43,16 @@ not start the review in auto-accept or bypass-permissions mode.
   `--scope user`. Without `--agent claude-code` it installs for Copilot; without `--all`, when nobody can answer its
   question (for example when your AI tool runs it for you), it installs nothing.
 - **With the skills command** (needs Node.js): open a terminal in your project's folder and run
-  `npx skills add hevelius-ai/aschecked`.
+  `npx skills add hevelius-ai/aschecked -a claude-code -y`. It puts the skill in `.claude/skills/aschecked` and
+  adds a `skills-lock.json` file to your project's folder.
 
 Start Claude Code after installing it: in our tests, a Claude Code session that was already open did not see the
 newly installed skill.
+
+**To remove AsChecked:** delete the `aschecked` folder it was installed into (`.claude/skills/aschecked` in your
+project, or `~/.claude/skills/aschecked` in your home folder); the GitHub CLI has no uninstall command. If you
+installed it with the skills command, run `npx skills remove aschecked` in your project's folder instead, which also
+takes it out of `skills-lock.json`.
 
 **2. Check the instruction files first.** Before the review starts, your tool loads its own instruction files by
 itself: Claude Code loads `CLAUDE.md` (and `AGENTS.md` when there is no `CLAUDE.md`); other tools load files such as
