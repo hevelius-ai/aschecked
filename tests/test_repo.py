@@ -38,3 +38,17 @@ def test_readme_says_in_development_until_release() -> None:
 
 def test_line_endings_are_forced_to_lf() -> None:
     assert "* text=auto eol=lf" in read(".gitattributes")
+
+
+# S7 Tier 4 (parked item from the S0 review, taken in under S7-12 Plan 3): the CI install pins pip by hash
+# and refuses source builds, so no build tool is fetched without a hash check.
+def test_ci_pins_pip_and_refuses_source_builds() -> None:
+    ci = read(".github/workflows/ci.yml")
+    installs = [line for line in ci.splitlines() if "pip install" in line]
+    assert installs, "no pip install in CI"
+    for line in installs:
+        assert "--require-hashes" in line and "--only-binary :all:" in line, line
+    assert any("requirements-pip.txt" in line for line in installs)
+    assert installs.index(next(line for line in installs if "requirements-pip.txt" in line)) == 0
+    pins = read("requirements-pip.txt")
+    assert "pip==" in pins and "--hash=sha256:" in pins
