@@ -328,8 +328,7 @@ def test_no_tracked_file_names_an_outside_project() -> None:
         assert not hits, f"{relative}: {hits[:3]}"
 
 
-# Added in S7 (owner 17 Nov, S7-1): the mode named up front. The release banner and its test wait for the release
-# (S7-10B: main keeps "In development, not ready to use" until then).
+# Added in S7 (owner 17 Nov, S7-1): the mode named up front. The release banner's test is in tests/test_repo.py (S7-9).
 def test_mode_is_named_before_the_install_steps() -> None:
     section = flat(text()).split("## Run it in Claude Code")[1]
     before_install = section.split("**1. Install it**")[0]

@@ -1,7 +1,7 @@
 # AsChecked
 
-> **Version 1.** The method passed its benchmark (see Results). AsChecked lists the problems it found in what it
-> checked; it cannot confirm that anything is secure.
+> **Version 1.** The method passed its benchmark in Claude Code with Claude Fable 5.2 at medium effort (see Results).
+> AsChecked lists problems it found in what it checked; it cannot confirm that anything is secure.
 
 AsChecked is a read-only review for people who built something with AI. You run it in the AI tool you already use.
 It reads your project and gives you a short report in plain words: at most five things a professional would fix or
