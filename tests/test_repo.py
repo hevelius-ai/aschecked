@@ -39,6 +39,10 @@ def test_readme_carries_the_release_banner() -> None:
     assert "In development, not ready to use" not in first_screen
     assert "> **Version 1.**" in first_screen
     assert "cannot confirm that anything is secure" in first_screen
+    # PR #5 review round 1 (MEDIUM): the banner names where and with which setting the benchmark was passed.
+    flat_screen = " ".join(re.sub(r"^> ?", "", line) for line in first_screen.splitlines()).split()
+    flat_screen = " ".join(flat_screen)
+    assert "passed its benchmark in Claude Code with Claude Fable 5.2 at medium effort" in flat_screen
 
 
 def test_line_endings_are_forced_to_lf() -> None:
