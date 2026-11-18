@@ -32,9 +32,13 @@ def test_licence_code_is_mit_with_the_hevelius_notice() -> None:
     assert 'THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND' in text
 
 
-def test_readme_says_in_development_until_release() -> None:
+# Locked S0 check changed under the owner's decision S7-9 (17 Nov 2026, "yes"): on the release-candidate branch,
+# which merges with the release tag, `test_readme_says_in_development_until_release` becomes this check.
+def test_readme_carries_the_release_banner() -> None:
     first_screen = "\n".join(read("README.md").splitlines()[:10])
-    assert "In development, not ready to use" in first_screen
+    assert "In development, not ready to use" not in first_screen
+    assert "> **Version 1.**" in first_screen
+    assert "cannot confirm that anything is secure" in first_screen
 
 
 def test_line_endings_are_forced_to_lf() -> None:
