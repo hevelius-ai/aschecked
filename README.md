@@ -1,7 +1,7 @@
 # AsChecked
 
-> **First release.** Tested in Claude Code with the models in Results. The other ways to run it are packaged for,
-> not yet proven. It lists problems it found; it never says a project is safe.
+> **In development, not ready to use.** The method passed its re-test (see Results), but the release checks are
+> still to come. Please do not install or run it until the first release is tagged.
 
 AsChecked is a read-only review for people who built something with AI. You run it in the AI tool you already use.
 It reads your project and gives you a short report in plain words: at most five things a professional would fix or

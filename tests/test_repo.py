@@ -31,12 +31,9 @@ def test_licence_code_is_mit_with_the_hevelius_notice() -> None:
     assert 'THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND' in text
 
 
-# Changed in S7 (owner's S7-3A, 17 Nov): the release-candidate branch carries the release banner, which merges with
-# the tag (D13 kept "In development, not ready to use" on main until release).
-def test_readme_carries_the_release_banner() -> None:
+def test_readme_says_in_development_until_release() -> None:
     first_screen = "\n".join(read("README.md").splitlines()[:10])
-    assert "First release." in first_screen
-    assert "In development, not ready to use" not in first_screen
+    assert "In development, not ready to use" in first_screen
 
 
 def test_line_endings_are_forced_to_lf() -> None:
