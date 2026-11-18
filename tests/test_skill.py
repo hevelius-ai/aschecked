@@ -372,3 +372,23 @@ def test_written_log_and_show_carry_every_switch() -> None:
             if "log" in words or "show" in words:
                 for switch in ("--no-show-signature", "--no-textconv", "--no-ext-diff", "--no-lazy-fetch"):
                     assert switch in words, f"{path.name}: {command} lacks {switch}"
+
+
+# Added for the owner's S7-16 (18 Nov 2026, A+B combined, after review round 3's R3-1): the skip rule also looks where
+# git reads settings beyond .git/config, and the report always suggests the history scan in a fresh clone.
+def test_s7_16_widened_skip_rule_and_fresh_clone_scan() -> None:
+    steps = flat(section("Steps"))
+    skip_rule = steps.split("Skip the history scan", 1)[1][:600]
+    for part in ("`extensions`", "`includeIf`", "`.git` is not a folder", "`commondir`", "`config.worktree`"):
+        assert part in skip_rule, part
+    assert 'Either way, under "Scans to run yourself", suggest the same history command in a fresh clone' in steps
+    assert "has the full history" in steps
+
+
+# Added for review round 3's R3-2 (LOW): a written-out log or show also carries -c diff.submodule=short.
+def test_written_log_and_show_carry_short_submodule_diffs() -> None:
+    for path in [SKILL, *sorted((SKILL_DIR / "references").glob("*.md"))]:
+        for command in re.findall(r"`(git -c [^`]*)`", path.read_text(encoding="utf-8")):
+            words = command.split()
+            if "log" in words or "show" in words:
+                assert "diff.submodule=short" in words, f"{path.name}: {command}"
