@@ -214,9 +214,11 @@ def test_also_found_list_after_five_findings() -> None:
 
 # S7-14 (owner, 18 Nov 2026): locked checks for the method change M1, M2, M3, M5 and M6
 # (records DESIGN-S7-12-METHOD.md, version 3). Written before the change and seen failing.
+# Changed under the owner's S7-17 1B (18 Nov 2026): the section is only for an area the owner says is being
+# built, or the work on a branch that is not the main branch; "told or inferred" is gone.
 WIP_HEADING = (
-    "Work in progress, not ranked (only for an area the owner is building or reworking, "
-    "told or inferred; up to five, one line each):"
+    "Work in progress, not ranked (only for an area the owner says is being built or reworked, "
+    "or the work on a branch that is not the main branch; up to five, one line each):"
 )
 
 
@@ -232,8 +234,33 @@ def test_m1_work_in_progress_section_in_the_template() -> None:
 def test_m1_step_seven_hands_work_in_progress_to_the_named_section() -> None:
     steps = flat(section("Steps"))
     assert '"Work in progress, not ranked"' in steps
-    assert "told or inferred" in steps.split("**Rank and keep at most five,**", 1)[1]
+    # S7-17 1B: was `"told or inferred" in` step 7.
+    assert "the owner says they are building or reworking" in steps.split("**Rank and keep at most five,**", 1)[1]
     assert "handed to that work, not ranked" not in steps
+
+
+# S7-17 1B (owner, 18 Nov 2026): on the main branch the section is never inferred from a roadmap, recent
+# migrations or recent platform support; only what the owner says, or a branch that is not main, puts work there.
+def test_s7_17_work_in_progress_never_inferred_on_main() -> None:
+    step_seven = flat(section("Steps")).split("**Rank and keep at most five,**", 1)[1].split(" 8. ", 1)[0]
+    assert "told or inferred" not in step_seven
+    assert "told or inferred" not in flat(report_template())
+    assert "a branch that is not the main branch" in step_seven
+    assert "Never infer such an area on the main branch" in step_seven
+    for source in ("roadmap", "recent changes", "plans"):
+        assert source in step_seven, source
+    assert "those defects are ranked as usual" in step_seven
+
+
+# PR #3 review round 1, MEDIUM: the template heading dropped "reworking", so it allowed less than step 7.
+def test_s7_17_heading_and_step_seven_name_the_same_cases() -> None:
+    step_seven = flat(section("Steps")).split("**Rank and keep at most five,**", 1)[1].split(" 8. ", 1)[0]
+    template = flat(report_template())
+    heading = template[template.index("Work in progress, not ranked") :].split("):", 1)[0]
+    assert "the owner says they are building or reworking" in step_seven
+    assert "the owner says is being built or reworked" in heading
+    for case in ("a branch that is not the main branch",):
+        assert case in step_seven and case in heading, case
 
 
 def test_m1_work_in_progress_lines_count_toward_the_900_words() -> None:
