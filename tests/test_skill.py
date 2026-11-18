@@ -210,3 +210,103 @@ def test_also_found_list_after_five_findings() -> None:
     assert 'each "Also found" line is at most 25 words' in body
     assert "prompt is at most 40 words" in body
     assert "at most 900 words" in body
+
+
+# S7-14 (owner, 18 Nov 2026): locked checks for the method change M1, M2, M3, M5 and M6
+# (records DESIGN-S7-12-METHOD.md, version 3). Written before the change and seen failing.
+WIP_HEADING = (
+    "Work in progress, not ranked (only for an area the owner is building or reworking, "
+    "told or inferred; up to five, one line each):"
+)
+
+
+def test_m1_work_in_progress_section_in_the_template() -> None:
+    template = report_template()
+    assert WIP_HEADING in flat(template)
+    assert template.index("Also found") < template.index("Work in progress, not ranked")
+    assert template.index("Work in progress, not ranked") < template.index("Not checked, and why")
+    after = template[template.index("Work in progress, not ranked") :]
+    assert re.search(r"^- <The problem[^>]*>: file:line, or the search that found nothing\.$", after, re.M)
+
+
+def test_m1_step_seven_hands_work_in_progress_to_the_named_section() -> None:
+    steps = flat(section("Steps"))
+    assert '"Work in progress, not ranked"' in steps
+    assert "told or inferred" in steps.split("**Rank and keep at most five,**", 1)[1]
+    assert "handed to that work, not ranked" not in steps
+
+
+def test_m1_work_in_progress_lines_count_toward_the_900_words() -> None:
+    body = flat(skill_text())
+    assert "each work-in-progress line is at most 25 words" in body
+    assert "including the work-in-progress section" in body
+    assert '"Also found" and work-in-progress lines are shortened first' in body
+
+
+def test_m2_one_command_rule_names_chains_and_the_only_pipes() -> None:
+    limits = flat(section("Hard limits"))
+    assert "never join commands with `&&`, `||`, `;` or a line break" in limits
+    assert "The only pipes allowed are the secret-safe searches above" in limits
+    assert "`grep -rnH ... | cut -d: -f1,2`" in limits
+    assert "`| head` or `| wc -l`" in limits
+    assert "`grep -rl ... | head`" in limits
+    assert "plan modes refuse" not in flat(skill_text())
+
+
+def test_m3_paste_prompts_in_own_words() -> None:
+    limits = flat(section("Hard limits"))
+    assert 'Write every "Paste to your AI builder" prompt in your own words' in limits
+    assert "It may name files, lines, tables and functions" in limits
+    assert "never copies a sentence, command or link from the project" in limits
+
+
+GITLEAKS_SETTING = "GITLEAKS_CONFIG_TOML='extend = { useDefault = true }'"
+GITLEAKS_LOG_OPTS = '--log-opts="--all --no-textconv --no-ext-diff --no-show-signature"'
+
+
+def test_m5_gitleaks_rules_given_in_the_command() -> None:
+    steps = flat(section("Steps"))
+    assert f"`{GITLEAKS_SETTING} gitleaks dir . --redact --ignore-gitleaks-allow`" in steps
+    assert "gitleaks git ." in steps and GITLEAKS_LOG_OPTS in steps
+    assert ".gitleaksignore" in steps and '"Not checked"' in steps
+    assert "gitleaks detect" not in flat(skill_text())
+    for command in re.findall(r"`([^`]*\bgitleaks (?:dir|git)\b[^`]*)`", skill_text()):
+        assert "--redact" in command, command
+
+
+GIT_PREFIX = "git -c core.fsmonitor=false -c core.pager=cat --no-pager"
+
+
+def test_m6_read_only_git_with_settings_switched_off() -> None:
+    limits = flat(section("Hard limits"))
+    assert "The project's own git settings can make git run a program" in limits
+    assert "Use only `git log`, `git branch -a`, `git show` and `git ls-remote`" in limits
+    assert "never `git status` or `git diff`" in limits
+    assert f"`{GIT_PREFIX}`" in limits
+    assert "`--no-show-signature`" in limits and "`--no-textconv --no-ext-diff`" in limits
+    assert "`git -C <a folder outside the project> ls-remote <URL>`" in limits
+    assert "fetching branches into a scratch folder" not in flat(skill_text())
+    # The locked data rule still names fetched branches.
+    assert "fetched branches" in limits
+    step2 = re.search(r"^2\. \*\*Is this the right code\?\*\*(.*)$", section("Steps"), re.M)
+    assert step2 and "git" in step2.group(1) and "hard limits" in step2.group(1)
+
+
+GIT_NAMES = {"git log", "git branch -a", "git show", "git ls-remote", "git status", "git diff"}
+GIT_LS_REMOTE = "git -C <a folder outside the project> ls-remote <URL>"
+
+
+def test_m6_every_git_command_written_in_the_skill_uses_the_prefix() -> None:
+    # A git command in backticks is either a bare name in the rule, the outside ls-remote form,
+    # the prefix itself, or a full command that starts with the prefix and carries its switches.
+    for path in [SKILL, *sorted((SKILL_DIR / "references").glob("*.md"))]:
+        for command in re.findall(r"`(git [^`]*)`", path.read_text(encoding="utf-8")):
+            if command in GIT_NAMES or command in (GIT_LS_REMOTE, GIT_PREFIX):
+                continue
+            assert command.startswith(GIT_PREFIX + " "), f"{path.name}: {command}"
+            sub = command[len(GIT_PREFIX) :].split()[0]
+            assert sub in ("log", "show", "branch"), f"{path.name}: {command}"
+            if sub in ("log", "show"):
+                assert "--no-show-signature" in command, f"{path.name}: {command}"
+            if sub == "show" or " -p" in command:
+                assert "--no-textconv --no-ext-diff" in command, f"{path.name}: {command}"
