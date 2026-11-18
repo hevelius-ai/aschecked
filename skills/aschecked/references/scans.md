@@ -1,6 +1,6 @@
 # Scans
 
-Which scanners to suggest under "Scans to run yourself", by stack and platform, and the traps in reading their output. Run a scanner during the review only if it is already installed, from outside the project, as SKILL.md says; never install one.
+Which scanners to suggest under "Scans to run yourself", by stack and platform, and the traps in reading their output. Run a scanner during the review only if it is already installed, where step 6 of SKILL.md says; never install one.
 
 ## Suggest by stack and platform
 
@@ -26,6 +26,6 @@ Pick two to four that fit the project, each with one line on what it adds.
 - **Build-only noise:** most `npm audit` findings are in development tools that never reach users. Say which are which instead of passing on a count.
 - **Public-by-design keys:** a Supabase anon or publishable key, a Firebase web `apiKey`, a Stripe publishable key are meant to be in the client. Name them as public by design; the question is what the rules let that key do.
 - **A clean scan is not a clean bill:** scanners do not read access rules, business logic or claims on screen. Never write that a scan found nothing as a sign the project is fine.
-- **Scanners read their settings from the scanned folder:** a project's own `.gitleaks.toml` or `.gitleaksignore` can hide findings. Say when one is present.
+- **Scanners read their settings from the scanned folder:** a project's own `.gitleaks.toml` or `.gitleaksignore` can hide findings. The command in step 6 overrides the first; the second still applies, so say when one is present.
 - **Values:** never paste a scanner's raw output that shows a value. gitleaks only with `--redact`.
 - **Sending data out:** `npm audit` and an online `osv-scanner` send the package list (not the code) to an outside service; say so in the report.

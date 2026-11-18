@@ -1,6 +1,7 @@
 """S0 checks of the repository's fixed files. Written before the files and seen failing first."""
 
 import hashlib
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -38,3 +39,33 @@ def test_readme_says_in_development_until_release() -> None:
 
 def test_line_endings_are_forced_to_lf() -> None:
     assert "* text=auto eol=lf" in read(".gitattributes")
+
+
+# S7 Tier 4 (parked item from the S0 review, taken in under S7-12 Plan 3): the CI install pins pip by hash
+# and refuses source builds, so no build tool is fetched without a hash check.
+def test_ci_pins_pip_and_refuses_source_builds() -> None:
+    ci = read(".github/workflows/ci.yml")
+    installs = [line for line in ci.splitlines() if "pip install" in line]
+    assert installs, "no pip install in CI"
+    for line in installs:
+        assert "--require-hashes" in line and "--only-binary :all:" in line, line
+    assert any("requirements-pip.txt" in line for line in installs)
+    assert installs.index(next(line for line in installs if "requirements-pip.txt" in line)) == 0
+    pins = read("requirements-pip.txt")
+    assert "pip==" in pins and "--hash=sha256:" in pins
+
+
+# Added in PR #2 review round 1 (H1): an unquoted value holding ": " or " #" is not valid plain YAML, and GitHub then
+# runs no job at all. The pinning test above read the lines as text and passed on the broken file.
+def test_workflow_plain_values_are_valid_yaml() -> None:
+    for path in sorted((ROOT / ".github" / "workflows").glob("*.yml")):
+        for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+            match = re.match(r"^\s*(?:- )?[A-Za-z_-]+: (.+)$", line)
+            if not match:
+                continue
+            value = match.group(1)
+            if value[0] in "'\"|>[{&*!":
+                continue
+            assert ": " not in value and " #" not in value.split(" # ")[0] and not value.endswith(":"), (
+                f"{path.name}:{number}: quote this value: {value}"
+            )
