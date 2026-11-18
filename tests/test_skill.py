@@ -310,3 +310,34 @@ def test_m6_every_git_command_written_in_the_skill_uses_the_prefix() -> None:
                 assert "--no-show-signature" in command, f"{path.name}: {command}"
             if sub == "show" or " -p" in command:
                 assert "--no-textconv --no-ext-diff" in command, f"{path.name}: {command}"
+
+
+# Added in PR #2 review round 1 (H2, proven 18 Nov: plain `log -S` and `log -G` ran a planted textconv program three
+# times each; with --no-textconv --no-ext-diff, none): the switches go on every log and show, not only where a diff
+# is shown. The M6 checks above are unchanged.
+def test_m6_switches_on_every_log_and_show() -> None:
+    limits = flat(section("Hard limits"))
+    assert "`--no-textconv --no-ext-diff` to every `log` and `show`" in limits
+    assert "`log -S` and `log -G`" in limits
+    assert "wherever a diff is shown" not in limits
+
+
+# Added in PR #2 review round 1 (M2): the history command carries the setting and the allow-comment flag too, in full.
+def test_m5_history_command_in_full() -> None:
+    steps = flat(section("Steps"))
+    assert f"`{GITLEAKS_SETTING} gitleaks git . --redact --ignore-gitleaks-allow {GITLEAKS_LOG_OPTS}`" in steps
+    for command in re.findall(r"`([^`]*\bgitleaks (?:dir|git)\b[^`]*)`", skill_text()):
+        assert command.startswith(GITLEAKS_SETTING) and "--ignore-gitleaks-allow" in command, command
+
+
+# Added in PR #2 review round 1 (M1, M3): where each scanner runs, and no unmasked history read of a flagged file.
+def test_scanner_places_and_no_unmasked_history_read() -> None:
+    steps = flat(section("Steps"))
+    assert "For keys, from the project folder (it writes nothing)" in steps
+    assert "Run the others from outside the project: `osv-scanner`" in steps
+    scans = (SKILL_DIR / "references" / "scans.md").read_text(encoding="utf-8")
+    assert "from outside the project, as SKILL.md says" not in scans
+    limits = flat(section("Hard limits"))
+    assert (
+        "Never use `log -p` or `show` on a file the secret search flagged or the gitleaks history scan named" in limits
+    )
