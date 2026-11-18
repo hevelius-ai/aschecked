@@ -119,10 +119,12 @@ AsChecked is packaged for, not yet proven in, these tools.
   as above) into your project as `.agents/skills/aschecked`. Packaged for, not yet proven. Use the tool's plan or
   read-only mode where it has one.
 - **Cline:** copy the folder into `.claude/skills/aschecked`, as for Claude Code. Packaged for, not yet proven.
-- **Lovable, Bolt, Replit:** these builders document importing a skill from a public GitHub repository; for
-  Lovable use `https://github.com/hevelius-ai/aschecked/tree/main/skills/aschecked`. Not yet proven: AsChecked has
-  not been imported into them yet, and whether they also take the `references` folder is unknown (the method works
-  from `SKILL.md` alone).
+- **Lovable, Bolt:** these builders document importing a skill from a public GitHub repository; for Lovable use
+  `https://github.com/hevelius-ai/aschecked/tree/main/skills/aschecked`. Not yet proven: AsChecked has not been
+  imported into them yet, and whether they also take the `references` folder is unknown (the method works from
+  `SKILL.md` alone).
+- **Replit:** not tried (needs a paid plan): Replit documents skills and its Plan mode for paid plans only. Not yet
+  proven. On any plan, you can download your project from Replit and use "Run it in a chat (claude.ai)" above.
 - **Anything else:** paste [`paste/aschecked-prompt.md`](paste/aschecked-prompt.md) and give it your code. Not yet
   proven.
 
