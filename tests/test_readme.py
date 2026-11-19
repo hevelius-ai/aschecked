@@ -426,3 +426,28 @@ def test_git_settings_limit_is_stated() -> None:
         "a copy you cloned yourself",
     ):
         assert phrase in limit, phrase
+
+
+# Added for the owner's S7-20 6A (18 Nov 2026): three moments where the walkthrough's first-time users hesitated
+# (run w2, LOW findings) each get one sentence in the README.
+def between(body: str, start: str, end: str) -> str:
+    assert start in body, start
+    return body.split(start, 1)[1].split(end, 1)[0]
+
+
+def test_s7_20_gh_install_warning_is_explained() -> None:
+    route = between(flat(text()), "**With the GitHub CLI**", "**With the skills command**")
+    for phrase in ("not verified by GitHub", "review the installed files", "every skill", ".claude/skills/aschecked"):
+        assert phrase in route, phrase
+
+
+def test_s7_20_says_where_to_save_the_report() -> None:
+    step = between(flat(text()), "**4. Read the report.**", "Read-only is an instruction")
+    assert "Save the report yourself" in step
+    assert "outside your project's folder" in step
+    assert "show up as a change" in step
+
+
+def test_s7_20_says_how_to_download_the_prompt_file() -> None:
+    chat = between(flat(text()), "## Run it in a chat (claude.ai)", "## Which version it reviews")
+    assert "**Download raw file**" in chat
