@@ -43,7 +43,9 @@ not start the review in auto-accept or bypass-permissions mode.
   terminal in your project's folder (it must be a git repository) and run
   `gh skill install hevelius-ai/aschecked --agent claude-code --all`. To install it for every project instead, add
   `--scope user`. Without `--agent claude-code` it installs for Copilot; without `--all`, when nobody can answer its
-  question (for example when your AI tool runs it for you), it installs nothing.
+  question (for example when your AI tool runs it for you), it installs nothing. It then warns that skills are not
+  verified by GitHub and asks you to review the installed files: GitHub shows this for every skill, and the files
+  are in `.claude/skills/aschecked` if you want to read them before you start.
 - **With the skills command** (needs Node.js): open a terminal in your project's folder and run
   `npx skills add hevelius-ai/aschecked -a claude-code -y`. It puts the skill in `.claude/skills/aschecked` and
   adds a `skills-lock.json` file to your project's folder.
@@ -71,7 +73,8 @@ type `/aschecked`. AsChecked asks you three short questions about
 your project; answer them, or say "skip" and it will work from your README.
 
 **4. Read the report.** If Claude Code asks at the end whether to approve a plan, choose to keep planning: the
-report is the answer, and approving would let it start editing your project. Save the report yourself.
+report is the answer, and approving would let it start editing your project. Save the report yourself: copy it into
+a text file outside your project's folder, so that it does not show up as a change in your project.
 
 Read-only is an instruction the model is asked to follow, in Claude Code and every other tool. Plan mode in Claude
 Code is meant to keep it reading and planning instead of editing. Whether other tools' plan or read-only modes
@@ -93,7 +96,8 @@ To be safe, review a copy you cloned yourself.
    GitHub and use GitHub's **Download ZIP**.
 2. Start a new chat with Claude Fable 5.2 (or Claude Opus 5.5); if the chat offers an effort setting, choose medium.
    Our benchmark ran in Claude Code; whether a chat reaches the same results is not yet proven. Upload two files: the
-   zip, and [`paste/aschecked-prompt.md`](paste/aschecked-prompt.md) from this repository.
+   zip, and [`paste/aschecked-prompt.md`](paste/aschecked-prompt.md) from this repository. To save that file, open
+   the link on GitHub and click **Download raw file** (the download button at the top right of the file).
 3. Type: "Run the AsChecked review in the attached prompt file on the attached project."
 
 ## Which version it reviews
