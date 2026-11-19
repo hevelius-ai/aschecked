@@ -432,18 +432,28 @@ def test_git_settings_limit_is_stated() -> None:
 # (run w2, LOW findings) each get one sentence in the README.
 def between(body: str, start: str, end: str) -> str:
     assert start in body, start
-    return body.split(start, 1)[1].split(end, 1)[0]
+    rest = body.split(start, 1)[1]
+    assert end in rest, end
+    return rest.split(end, 1)[0]
 
 
+# Round 1 review (MEDIUM): the files' place must be right for both scopes, and the warning must not read as
+# belonging to the case where nothing is installed.
 def test_s7_20_gh_install_warning_is_explained() -> None:
     route = between(flat(text()), "**With the GitHub CLI**", "**With the skills command**")
-    for phrase in ("not verified by GitHub", "review the installed files", "every skill", ".claude/skills/aschecked"):
+    for phrase in (
+        "When it installs, it warns that skills are not verified by GitHub",
+        "review the installed files",
+        "every skill",
+        "your project's `.claude/skills/aschecked` folder",
+        "with `--scope user`, in `~/.claude/skills/aschecked` in your home folder",
+    ):
         assert phrase in route, phrase
 
 
 def test_s7_20_says_where_to_save_the_report() -> None:
     step = between(flat(text()), "**4. Read the report.**", "Read-only is an instruction")
-    assert "Save the report yourself" in step
+    assert "Save the report yourself: copy it into a text file" in step
     assert "outside your project's folder" in step
     assert "show up as a change" in step
 
