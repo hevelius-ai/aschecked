@@ -43,9 +43,10 @@ not start the review in auto-accept or bypass-permissions mode.
   terminal in your project's folder (it must be a git repository) and run
   `gh skill install hevelius-ai/aschecked --agent claude-code --all`. To install it for every project instead, add
   `--scope user`. Without `--agent claude-code` it installs for Copilot; without `--all`, when nobody can answer its
-  question (for example when your AI tool runs it for you), it installs nothing. It then warns that skills are not
-  verified by GitHub and asks you to review the installed files: GitHub shows this for every skill, and the files
-  are in `.claude/skills/aschecked` if you want to read them before you start.
+  question (for example when your AI tool runs it for you), it installs nothing. When it installs, it warns that
+  skills are not verified by GitHub and asks you to review the installed files: GitHub shows this for every skill.
+  The files are in your project's `.claude/skills/aschecked` folder (with `--scope user`, in
+  `~/.claude/skills/aschecked` in your home folder) if you want to read them before you start.
 - **With the skills command** (needs Node.js): open a terminal in your project's folder and run
   `npx skills add hevelius-ai/aschecked -a claude-code -y`. It puts the skill in `.claude/skills/aschecked` and
   adds a `skills-lock.json` file to your project's folder.
