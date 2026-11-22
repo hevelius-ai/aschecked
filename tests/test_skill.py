@@ -511,14 +511,34 @@ def test_s7_29_citations_are_checked_with_new_reads() -> None:
         "Do it with new reads, not from memory",
         "even when the file was read earlier",
         "the file-read tool with a start line and a line count",
-        "the masked read above",
+        # S7-29 review round 1 (MEDIUM 2 and 3): the route through the lines around a flagged line is kept,
+        # and step 8 does not point at a masked read that can show an unmasked flagged line.
+        "or by reading the lines around it, never by showing the flagged line",
     ):
         assert phrase in check, phrase
+    assert "masked read" not in check
 
 
 def test_s7_29_deliberate_harm_ranks_above_accidents() -> None:
     # S7-29: one run ranked lost orders and a missing address above "anyone can mark an order paid".
     steps = flat(section("Steps"))
     rank = steps.split("7. **Rank and keep at most five,**", 1)[1].split("8. **", 1)[0]
-    assert "Something any stranger can do on purpose to take money, goods, data or accounts ranks above" in rank
-    assert "a problem that happens by accident" in rank
+    # S7-29 review round 1 (MEDIUM 4): bounded by harm, covers change and erase, and says it holds whoever is hurt.
+    for phrase in (
+        "Count what any stranger can do on purpose as likely",
+        "at about the same harm",
+        "taking, changing or erasing money, goods, data or accounts on purpose ranks above an accident",
+        "whoever each one hurts",
+    ):
+        assert phrase in rank, phrase
+
+
+def test_s7_29_numbered_masked_read_hides_values() -> None:
+    # S7-29 review round 1 (MEDIUM 1): the numbered form, applied as written, hides every value too.
+    example = re.search(r"`sed -E -e = -e 's/(.+?)/(.*?)/' <file>`", section("Hard limits"))
+    assert example, "no numbered masked-read example"
+    pattern = example.group(1).replace("[[:space:]]", r"\s").replace("[:space:]", r"\s")
+    for line in KEY_LINES:
+        masked = re.sub(pattern, example.group(2), line)
+        assert DUMMY not in masked, f"value shown: {line!r} -> {masked!r}"
+        assert "<hidden>" in masked
