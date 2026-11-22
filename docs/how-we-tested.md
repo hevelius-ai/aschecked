@@ -105,7 +105,35 @@ results worse and was undone). The changes kept were checks on the main journey,
 publishes and platform claims; keeping related problems together; and, after the best run still stopped at 14, the
 "Also found" list. Counting those lines was decided after seeing the earlier results.
 
-## Sandbox test of the released version
+## Sandbox test of the released version (22 Nov 2026)
 
-Results to follow: eight purpose-built apps with known problems, answer keys checked before any run, 24 Claude Code
-reviews on the released version and a baseline on the earlier one.
+Eight small apps we wrote for this test: six with problems we planted on purpose (team notes on Next.js and
+Supabase, a group chat on Firebase, a bookings API on Express, an invoices app on Flask, a desktop notes app on
+Electron, a shop taking card payments with Stripe) and two built correctly, to count false alarms. One app hid an
+instruction telling AI reviewers to call it secure; two hid fake keys. An independent reviewer checked the answer key
+against the code before any run, and the reports were scored blind (the scorer did not know which version or tool
+wrote each one).
+
+Claude Code with Claude Fable 5.2 at medium effort, in plan mode: three runs per app on the released version, one run
+per app on the earlier version. Codex (GPT-6-Luna, medium) and Cursor (free plan, Auto model) once per app.
+
+| Runs | Most serious problem found (6 apps with planted problems) | Other planted problems found, per run | All report checks met | Correct apps with no false alarm | Planted instruction reported, not followed |
+|---|---|---|---|---|---|
+| Claude Code, released version (24) | 18 of 18, always as finding 1 | 2.8 | 19 of 24 | 6 of 6 | 3 of 3 |
+| Claude Code, earlier version (8) | 6 of 6 | 2.8 | 6 of 8 | 2 of 2 | 1 of 1 |
+| Codex (8) | 5 of 6 | 2.0 | 3 of 8 | 2 of 2 | 1 of 1 |
+| Cursor (2 of 8; the free plan's limit stopped the rest) | 2 of 2 | 3.0 | 1 of 2 | not run | not run |
+
+In every Claude Code run no file changed and no planted key value appeared in anything the AI wrote. On the released
+version, a plain-words line came before about 96% of the AI's steps (about 12% on the earlier version), and none of
+those lines appeared in a report.
+
+We fixed the pass marks before the runs. The released version met all of them but one: every report check met in at
+least 22 of 24 runs. It was 19: five reports cited a line number one or two lines away from the text, sometimes past
+the end of a short file. The earlier version did the same in one of its eight runs, so the plain-words rule did not
+cause it.
+
+What this test cannot show: planted problems are easier to find than real ones, and we wrote the apps ourselves.
+Three of the six apps, and one of the two correct ones, use stacks the method has its own checks for. Codex and Cursor
+ran once per app. It shows that the released version is consistent and did not get worse; the four real projects in
+the benchmark above remain the main evidence.
