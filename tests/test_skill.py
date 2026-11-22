@@ -470,3 +470,22 @@ def test_s7_27_intake_questions_in_plain_words() -> None:
         "If there is no answer (an automatic run), infer from the README and any public page, "
         "and mark each item as told or inferred."
     ) in intake
+
+
+# Added for the owner's S7-28 B (22 Nov 2026): the sandbox missed its line-accuracy pass mark (cited lines one or two
+# off, some past the end of a file). Before writing the report, every cited file and line is re-read and corrected.
+def test_s7_28_citations_are_re_read_before_the_report() -> None:
+    steps = flat(section("Steps"))
+    assert "8. **Check every citation.**" in steps
+    check = steps.split("8. **Check every citation.**", 1)[1].split("9. **", 1)[0]
+    for phrase in (
+        "Before writing the report, open again each file and line you cite",
+        'including "Also found" lines',
+        "confirm the line shows what you say",
+        "correct the line number, or drop the citation",
+        "the first line is 1",
+        "never past the file's last line",
+    ):
+        assert phrase in check, phrase
+    assert "9. **Write the report.**" in steps
+    assert steps.index("7. **Rank and keep at most five,**") < steps.index("8. **Check every citation.**")
