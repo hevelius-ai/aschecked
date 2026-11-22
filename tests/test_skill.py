@@ -494,3 +494,31 @@ def test_s7_28_citations_are_re_read_before_the_report() -> None:
         assert phrase in check, phrase
     assert "9. **Write the report.**" in steps
     assert steps.index("7. **Rank and keep at most five,**") < steps.index("8. **Check every citation.**")
+
+
+def test_s7_29_masked_read_shows_line_numbers() -> None:
+    # S7-29: a masked read with sed showed no line numbers, so a cited line was counted by hand (one off).
+    limits = flat(section("Hard limits"))
+    assert re.search(r"`sed -E -e = -e '[^`]*KEY\|SECRET\|TOKEN\|PASSWORD[^`]*`", limits), "masked read without -e ="
+    assert "prints each line's number above it" in limits
+
+
+def test_s7_29_citations_are_checked_with_new_reads() -> None:
+    # S7-29: in 18 of 24 runs step 8 was done from memory, with no new read of any cited line.
+    steps = flat(section("Steps"))
+    check = steps.split("8. **Check every citation.**", 1)[1].split("9. **", 1)[0]
+    for phrase in (
+        "Do it with new reads, not from memory",
+        "even when the file was read earlier",
+        "the file-read tool with a start line and a line count",
+        "the masked read above",
+    ):
+        assert phrase in check, phrase
+
+
+def test_s7_29_deliberate_harm_ranks_above_accidents() -> None:
+    # S7-29: one run ranked lost orders and a missing address above "anyone can mark an order paid".
+    steps = flat(section("Steps"))
+    rank = steps.split("7. **Rank and keep at most five,**", 1)[1].split("8. **", 1)[0]
+    assert "Something any stranger can do on purpose to take money, goods, data or accounts ranks above" in rank
+    assert "a problem that happens by accident" in rank
