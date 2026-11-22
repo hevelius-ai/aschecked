@@ -481,36 +481,68 @@ def bullet(name: str) -> str:
 
 def test_s7_21_how_the_tools_were_tried_is_stated() -> None:
     section = other_tools()
-    for phrase in ("tried it once", "our own small test projects", "changed no file", "most serious known problem"):
+    for phrase in (
+        "tried it once",
+        "our own small test projects",
+        "met all our report checks (every required part, and evidence that matches the files)",
+        "changed no file",
+        "most serious known problem",
+        "One try is not proof",
+    ):
         assert phrase in section, phrase
-    assert "One try is not proof" in section
 
 
+# Round 1 review (MEDIUM): the labels follow the printed rule, Lovable is not called worked (no file check and no
+# answer key there), the steps are the steps tried, and each claim is pinned so a wrong README fails.
 def test_s7_21_each_tried_tool_names_its_result() -> None:
     for name in ("Codex", "Cursor", "Antigravity", "Bolt"):
         assert "Tried, not working" in bullet(name), name
-    assert "Tried once" in bullet("Lovable") and "worked" in bullet("Lovable")
-    assert "how well it finds problems was not measured" in bullet("Lovable")
+        assert "worked" not in bullet(name), name
+    lovable = bullet("Lovable")
+    assert "Tried once, not fully checked" in lovable and "worked" not in lovable
+    assert "whether the review changed no file, and how well it finds problems, were not checked there" in lovable
 
 
 def test_s7_21_models_and_modes_tried_are_named() -> None:
-    assert "GPT-6-Luna at medium effort" in bullet("Codex")
-    assert "`codex --sandbox read-only`" in bullet("Codex") and "sandbox" in bullet("Codex")
-    assert "free plan, Auto model" in bullet("Cursor")
-    assert "**Ask** mode" in bullet("Cursor") and "only wrote a plan" in bullet("Cursor")
-    assert "Claude Opus 4.6" in bullet("Antigravity")
-    assert "approve each command that only reads" in bullet("Antigravity")
-    assert "unattended mode stops at the first command" in bullet("Antigravity")
+    codex = bullet("Codex")
+    for phrase in (
+        "GPT-6-Luna at medium effort, on two test projects",
+        "`codex --sandbox read-only`",
+        "approve each command that only reads",
+        "non-admin sandbox",
+    ):
+        assert phrase in codex, phrase
+    cursor = bullet("Cursor")
+    for phrase in ("free plan, Auto model, on two test projects", "**Ask** mode", "only wrote a plan"):
+        assert phrase in cursor, phrase
+    antigravity = bullet("Antigravity")
+    for phrase in (
+        "Claude Opus 4.6 Thinking",
+        "on one test project",
+        "start it in plan mode",
+        "approve each command that only reads",
+        "unattended mode stops at the first command",
+    ):
+        assert phrase in antigravity, phrase
     assert "**Chat** mode" in bullet("Lovable")
     assert "**Plan** mode" in bullet("Bolt")
+    for name in ("Lovable", "Bolt"):
+        assert 'send "Run the aschecked skill on this project."' in bullet(name), name
 
 
 def test_s7_21_what_fell_short_is_stated() -> None:
+    for name in ("Codex", "Cursor"):
+        assert "both reviews (one on each project) found the most serious problem" in bullet(name), name
     assert "two lines away" in bullet("Codex")
     assert "no effort for any fix" in bullet("Cursor")
-    assert "ranked it second" in bullet("Antigravity")
-    assert "reassuring summary after the report's closing lines" in bullet("Bolt")
-    assert "skill's own instructions as project text" in bullet("Bolt")
+    assert "found the most serious problem but ranked it second" in bullet("Antigravity")
+    bolt = bullet("Bolt")
+    for phrase in (
+        "reassuring summary after the report's closing lines",
+        "skill's own instructions as project text",
+        "new version to the project's history",
+    ):
+        assert phrase in bolt, phrase
 
 
 def test_s7_21_import_paths_for_the_builders() -> None:
@@ -527,8 +559,8 @@ def test_s7_21_import_paths_for_the_builders() -> None:
 
 
 def test_s7_21_untried_tools_say_so() -> None:
-    assert "Not tried" in bullet("Devin Desktop, Kilo")
-    assert "Not tried" in bullet("Cline")
+    assert "Not tried (each needs an install and a sign-in)" in bullet("Devin Desktop, Kilo")
+    assert "Not tried (needs an install and a sign-in)" in bullet("Cline")
 
 
 def test_s7_21_nothing_is_called_proven() -> None:
