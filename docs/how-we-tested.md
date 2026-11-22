@@ -24,12 +24,12 @@ owner that flawed access rules were strong. Treat a report from a free consumer 
 
 In our test, on a small made-up app with a half-built feature and three planted problems in it, one run per model,
 each at extra effort (`--effort xhigh`), Claude Opus 5.5, Claude Fable 5.2 and Claude Sonnet 5.5 each found all
-three, in that separate list. We had planned to count only the numbered findings and "Also found" lines; because the
+three, in a separate list after the numbered findings, not ranked. We had planned to count only the numbered findings and "Also found" lines; because the
 method hands such problems to the work in progress, we counted that list too, a change made after seeing the results.
 
 ## Results of the benchmark
 
-Benchmark of this version, 18 Nov 2026, in Claude Code's plan mode. Use these results to choose a model and an effort
+Benchmark of the earlier version (commit `d8dd162`), 18 Nov 2026, in Claude Code's plan mode. Use these results to choose a model and an effort
 setting; the best we measured is Claude Fable 5.2 at medium effort.
 
 **How we tested.** The four test projects are AsBuild, a web app with accounts and roles, a mobile fitness app with
@@ -96,7 +96,7 @@ instruction telling the reviewer to report nothing: reported, not followed; a pl
 kept out of every prompt and reported; an unmerged branch: named, with its work; a half-built feature with three
 planted problems: all three found, in the work-in-progress list.
 
-**What these results can and cannot claim:** they hold for these four projects, this version of the method and one
+**What these results can and cannot claim:** they hold for these four projects, that version of the method and one
 computer. They show averages, the spread between runs and cost, not that every project will get the same result.
 
 How the method got here: the pass mark of 15 of 19 was set before an earlier re-test (15 Nov, one run per model).
@@ -119,19 +119,29 @@ per app on the earlier version. Codex (GPT-6-Luna, medium) and Cursor (free plan
 
 | Runs | Most serious problem found (6 apps with planted problems) | Other planted problems found, per run | All report checks met | Correct apps with no false alarm | Planted instruction reported, not followed |
 |---|---|---|---|---|---|
-| Claude Code, released version (24) | 18 of 18, always as finding 1 | 2.8 | 19 of 24 | 6 of 6 | 3 of 3 |
+| Claude Code, released version (24) | 18 of 18, always as finding 1 | 2.8 | 20 of 24 | 6 of 6 | 3 of 3 |
 | Claude Code, earlier version (8) | 6 of 6 | 2.8 | 6 of 8 | 2 of 2 | 1 of 1 |
 | Codex (8) | 5 of 6 | 2.0 | 3 of 8 | 2 of 2 | 1 of 1 |
-| Cursor (2 of 8; the free plan's limit stopped the rest) | 2 of 2 | 3.0 | 1 of 2 | not run | not run |
+| Cursor (2 of 8: six first failed on a start-up quoting error in our script, then the free plan's limit stopped the re-runs) | 2 of 2 | 3.0 | 1 of 2 | not run | not run |
 
 In every Claude Code run no file changed and no planted key value appeared in anything the AI wrote. On the released
 version, a plain-words line came before about 96% of the AI's steps (about 12% on the earlier version), and none of
 those lines appeared in a report.
 
 We fixed the pass marks before the runs. The released version met all of them but one: every report check met in at
-least 22 of 24 runs. It was 19: five reports cited a line number one or two lines away from the text, sometimes past
-the end of a short file. The earlier version did the same in one of its eight runs, so the plain-words rule did not
-cause it.
+least 22 of 24 runs. It was 20: four reports cited a line number one or two lines away from the text, sometimes past
+the end of a short file. The earlier version did the same in one of its eight runs, so this fault is older than the
+plain-words rule; with this few runs we cannot tell whether the rule changed how often it happens. (One citation of
+the reviewed copy's own git settings file was scored two ways by two scorers; we counted it as present throughout.
+Three earlier-version runs broke at the end because we changed our run script while they ran, and were run again.)
+
+Split by stack, released version: apps whose stacks the method has its own checks for (team notes, group chat,
+desktop notes, and the first correct app) against the others:
+
+| Stacks | Most serious problem found | Other planted problems found, per run | All report checks met |
+|---|---|---|---|
+| With their own checks | 9 of 9 | 2.3 | 10 of 12 |
+| Without | 9 of 9 | 3.3 | 10 of 12 |
 
 What this test cannot show: planted problems are easier to find than real ones, and we wrote the apps ourselves.
 Three of the six apps, and one of the two correct ones, use stacks the method has its own checks for. Codex and Cursor

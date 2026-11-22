@@ -2,7 +2,8 @@
 
 Back to the [README](../README.md).
 
-AsChecked is packaged for, not yet proven in, these tools. In November 2026 we tried it once in five of them, on
+AsChecked is packaged for, not yet proven in, these tools. In November 2026 we tried it once in five of them (Codex and Cursor also ran in our sandbox test, see
+[how we tested](how-we-tested.md)), on
 our own small test projects. A tool worked when its report met all our report checks (every required part, and
 evidence that matches the files), the review changed no file and it found the most serious known problem. One try
 is not proof.
