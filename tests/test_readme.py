@@ -119,7 +119,9 @@ def test_antigravity_results_stated() -> None:
     body = flat(text())
     assert re.search(r"Antigravity[^.]*Gemini 3\.8 Flash", body)
     assert "Claude Sonnet 4.6" in body
-    assert re.search(r"installed[^.]*Antigravity[^.]*not yet tried", body)
+    # Locked S3 check changed under S7-21 B (owner, 19 Nov 2026): the installed v1 skill has now been tried in
+    # Antigravity, so the README points to that result instead of saying "not yet tried".
+    assert "The installed v1 skill is the one tried in the list above." in body
 
 
 def test_readme_names_no_outside_project() -> None:
@@ -461,3 +463,74 @@ def test_s7_20_says_where_to_save_the_report() -> None:
 def test_s7_20_says_how_to_download_the_prompt_file() -> None:
     chat = between(flat(text()), "## Run it in a chat (claude.ai)", "## Which version it reviews")
     assert "**Download raw file**" in chat
+
+
+# Added for the owner's S7-21 B (19 to 22 Nov 2026): Codex, Cursor, Antigravity, Lovable and Bolt were each tried once
+# with the v1 skill on our own test projects (scores: independent scorer, records S7-21-SCORES). "Worked" needs the
+# required report form, no file changed and the most serious known problem found; nothing is called proven.
+def other_tools() -> str:
+    return between(flat(text()), "## Other tools", "## Results")
+
+
+def bullet(name: str) -> str:
+    section = other_tools()
+    start = f"- **{name}"
+    assert start in section, start
+    return section.split(start, 1)[1].split(" - **", 1)[0]
+
+
+def test_s7_21_how_the_tools_were_tried_is_stated() -> None:
+    section = other_tools()
+    for phrase in ("tried it once", "our own small test projects", "changed no file", "most serious known problem"):
+        assert phrase in section, phrase
+    assert "One try is not proof" in section
+
+
+def test_s7_21_each_tried_tool_names_its_result() -> None:
+    for name in ("Codex", "Cursor", "Antigravity", "Bolt"):
+        assert "Tried, not working" in bullet(name), name
+    assert "Tried once" in bullet("Lovable") and "worked" in bullet("Lovable")
+    assert "how well it finds problems was not measured" in bullet("Lovable")
+
+
+def test_s7_21_models_and_modes_tried_are_named() -> None:
+    assert "GPT-6-Luna at medium effort" in bullet("Codex")
+    assert "`codex --sandbox read-only`" in bullet("Codex") and "sandbox" in bullet("Codex")
+    assert "free plan, Auto model" in bullet("Cursor")
+    assert "**Ask** mode" in bullet("Cursor") and "only wrote a plan" in bullet("Cursor")
+    assert "Claude Opus 4.6" in bullet("Antigravity")
+    assert "approve each command that only reads" in bullet("Antigravity")
+    assert "unattended mode stops at the first command" in bullet("Antigravity")
+    assert "**Chat** mode" in bullet("Lovable")
+    assert "**Plan** mode" in bullet("Bolt")
+
+
+def test_s7_21_what_fell_short_is_stated() -> None:
+    assert "two lines away" in bullet("Codex")
+    assert "no effort for any fix" in bullet("Cursor")
+    assert "ranked it second" in bullet("Antigravity")
+    assert "reassuring summary after the report's closing lines" in bullet("Bolt")
+    assert "skill's own instructions as project text" in bullet("Bolt")
+
+
+def test_s7_21_import_paths_for_the_builders() -> None:
+    lovable = bullet("Lovable")
+    for phrase in (
+        "Personal skills",
+        "**Import skills**",
+        "https://github.com/hevelius-ai/aschecked/tree/main/skills/aschecked",
+    ):
+        assert phrase in lovable, phrase
+    bolt = bullet("Bolt")
+    for phrase in ("**Skills**", "**From GitHub**", "`https://github.com/hevelius-ai/aschecked`"):
+        assert phrase in bolt, phrase
+
+
+def test_s7_21_untried_tools_say_so() -> None:
+    assert "Not tried" in bullet("Devin Desktop, Kilo")
+    assert "Not tried" in bullet("Cline")
+
+
+def test_s7_21_nothing_is_called_proven() -> None:
+    section = other_tools().lower()
+    assert not re.search(r"(?<!not yet )\bproven\b", section.replace("not yet proven", ""))

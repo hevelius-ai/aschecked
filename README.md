@@ -122,16 +122,37 @@ method hands such problems to the work in progress, we counted that list too, a 
 
 ## Other tools
 
-AsChecked is packaged for, not yet proven in, these tools.
+AsChecked is packaged for, not yet proven in, these tools. In November 2026 we tried it once in five of them, on
+our own small test projects. A tool worked when its report had the required form, the review changed no file and it
+found the most serious known problem. One try is not proof.
 
-- **Codex, Cursor, Antigravity, Devin Desktop, Kilo:** copy the `skills/aschecked` folder (from the downloaded zip,
-  as above) into your project as `.agents/skills/aschecked`. Packaged for, not yet proven. Use the tool's plan or
-  read-only mode where it has one.
-- **Cline:** copy the folder into `.claude/skills/aschecked`, as for Claude Code. Packaged for, not yet proven.
-- **Lovable, Bolt:** these builders document importing a skill from a public GitHub repository; for Lovable use
-  `https://github.com/hevelius-ai/aschecked/tree/main/skills/aschecked`. Not yet proven: AsChecked has not been
-  imported into them yet, and whether they also take the `references` folder is unknown (the method works from
-  `SKILL.md` alone).
+- **Codex** (command line; tried with GPT-6-Luna at medium effort): copy the `skills/aschecked` folder (from the
+  downloaded zip, as above) into your project as `.agents/skills/aschecked`, start `codex --sandbox read-only` in
+  your project's folder and type `$aschecked`. On Windows, Codex first asks how to set up its sandbox; before that
+  setup, our unattended run could not run any command. Tried, not working: both reviews found the most serious
+  problem, but one cited a line two lines away from the text it described. Not yet proven.
+- **Cursor** (command line, free plan, Auto model): copy the folder into `.agents/skills/aschecked`, start Cursor's
+  agent in **Ask** mode (`agent --mode ask`) and type `/aschecked`. In plan mode it only wrote a plan and offered to
+  build it. Tried, not working: both reviews found the most serious problem, but one gave no effort for any fix. Not
+  yet proven.
+- **Antigravity** (command line; tried with Claude Opus 4.6, the strongest model it offered): copy the folder into
+  `.agents/skills/aschecked`, start it in plan mode, type `/aschecked` and approve each command that only reads; its
+  unattended mode stops at the first command. Tried, not working: it found the most serious problem but ranked it
+  second. Not yet proven.
+- **Devin Desktop, Kilo:** copy the folder into `.agents/skills/aschecked`. Not tried (each needs an install and a
+  sign-in). Not yet proven. Use the tool's plan or read-only mode where it has one.
+- **Cline:** copy the folder into `.claude/skills/aschecked`, as for Claude Code. Not tried (needs an install and a
+  sign-in). Not yet proven.
+- **Lovable:** in Account settings, open Personal skills, use the menu beside **Add skill** to choose **Import
+  skills**, pick GitHub and paste `https://github.com/hevelius-ai/aschecked/tree/main/skills/aschecked`. Then, in a
+  project, switch to **Chat** mode and type `/aschecked`. Tried once on a new to-do app that Lovable made: the import
+  and the review worked and the report had the required form; how well it finds problems was not measured there
+  (that app has no known problems to compare). Not yet proven.
+- **Bolt:** in a project, open the project name menu, then **Skills**, **Add skill**, **From GitHub**, and enter
+  `https://github.com/hevelius-ai/aschecked`. Then switch to **Plan** mode and type `/aschecked`. Tried, not working,
+  on a new to-do app that Bolt made: it ranked a missing undo above a list anyone on the internet can wipe, and added
+  a reassuring summary after the report's closing lines. Bolt keeps the skill inside your project, so the review
+  reported the skill's own instructions as project text. Not yet proven.
 - **Replit:** not tried (needs a paid plan): Replit documents skills and its Plan mode for paid plans only. Not yet
   proven. On any plan, you can download your project from Replit and use "Run it in a chat (claude.ai)" above.
 - **Anything else:** paste [`paste/aschecked-prompt.md`](paste/aschecked-prompt.md) and give it your code. Not yet
@@ -140,7 +161,7 @@ AsChecked is packaged for, not yet proven in, these tools.
 **Antigravity, tried with an earlier version of the method as a plain prompt:** with Gemini 3.8 Flash it missed all
 four known problems in a small web app with accounts and called that app's access rules strong; it found two of
 five known problems in a desktop app. Claude Sonnet 4.6 in the same tool found one of the four web-app problems.
-The installed v1 skill in Antigravity is not yet tried.
+The installed v1 skill is the one tried in the list above.
 
 ## Results
 
