@@ -98,8 +98,10 @@ def test_keep_planning_if_asked() -> None:
     assert "the report is the answer" in body
 
 
+# Locked check changed under S7-25 A (owner, 22 Nov 2026): this content moved from the README to a docs/ page,
+# so the check reads that page (or the README together with it).
 def test_install_routes() -> None:
-    body = flat(text())
+    body = flat(text() + doc("install-options.md") + doc("other-tools.md"))
     for route in (
         ".claude/skills/aschecked",
         "gh skill install hevelius-ai/aschecked --agent claude-code",
@@ -115,8 +117,10 @@ def test_install_routes() -> None:
     assert re.search(r"Lovable[^.]*zip[^.]*paid plans", body), "Lovable's zip download on paid plans only"
 
 
+# Locked check changed under S7-25 A (owner, 22 Nov 2026): this content moved from the README to a docs/ page,
+# so the check reads that page (or the README together with it).
 def test_antigravity_results_stated() -> None:
-    body = flat(text())
+    body = flat(doc("other-tools.md"))
     assert re.search(r"Antigravity[^.]*Gemini 3\.8 Flash", body)
     assert "Claude Sonnet 4.6" in body
     # Locked S3 check changed under S7-21 B (owner, 19 Nov 2026): the installed v1 skill has now been tried in
@@ -157,10 +161,11 @@ def test_local_links_resolve() -> None:
 # The outside projects' owners' account names are in the hashed set above (S6), so the README check covers them.
 
 
+# Locked check changed under S7-25 A (owner, 22 Nov 2026): this content moved from the README to a docs/ page,
+# so the check reads that page (or the README together with it).
 def test_every_other_tool_is_marked_not_yet_proven() -> None:
-    other = re.search(r"^## Other tools\n(.*?)(?=^## |\Z)", text(), re.M | re.S)
-    assert other, "no '## Other tools' section"
-    bullets = re.split(r"^- ", other.group(1), flags=re.M)[1:]
+    page = doc("other-tools.md").split("\n\n**Antigravity, tried with")[0]
+    bullets = re.split(r"^- ", page, flags=re.M)[1:]
     assert len(bullets) >= 4
     for bullet in bullets:
         assert "not yet proven" in flat(bullet).lower(), flat(bullet)[:60]
@@ -168,10 +173,11 @@ def test_every_other_tool_is_marked_not_yet_proven() -> None:
 
 # Added for the owner's S7-15 B (18 Nov 2026): Replit is marked not tried, because its skills and Plan mode need a
 # paid plan, and Replit users are pointed to the chat route.
+# Locked check changed under S7-25 A (owner, 22 Nov 2026): this content moved from the README to a docs/ page,
+# so the check reads that page (or the README together with it).
 def test_replit_marked_not_tried_needs_a_paid_plan() -> None:
-    other = re.search(r"^## Other tools\n(.*?)(?=^## |\Z)", text(), re.M | re.S)
-    assert other, "no '## Other tools' section"
-    bullets = [flat(b) for b in re.split(r"^- ", other.group(1), flags=re.M)[1:]]
+    page = doc("other-tools.md").split("\n\n**Antigravity, tried with")[0]
+    bullets = [flat(b) for b in re.split(r"^- ", page, flags=re.M)[1:]]
     replit = [b for b in bullets if b.startswith("**Replit:**")]
     assert len(replit) == 1, "no bullet of its own for Replit"
     for phrase in ("not tried (needs a paid plan)", "Plan mode", "Run it in a chat"):
@@ -186,8 +192,10 @@ def test_replit_marked_not_tried_needs_a_paid_plan() -> None:
 # `test_s7_19_best_setting_is_named_first_and_in_the_start_command`.
 
 
+# Locked check changed under S7-25 A (owner, 22 Nov 2026): this content moved from the README to a docs/ page,
+# so the check reads that page (or the README together with it).
 def results() -> str:
-    return flat(text()).split("## Results")[1].split(" ## ")[0]
+    return flat(doc("how-we-tested.md")).split("## Results of the benchmark")[1].split(" ## ")[0]
 
 
 def table_rows(section: str) -> list[list[str]]:
@@ -199,7 +207,7 @@ def table_rows(section: str) -> list[list[str]]:
 
 
 def results_raw() -> str:
-    return text().split("## Results")[1].split("\n## ")[0]
+    return doc("how-we-tested.md").split("## Results of the benchmark")[1].split("\n## ")[0]
 
 
 def test_s7_19_best_setting_is_named_first_and_in_the_start_command() -> None:
@@ -249,7 +257,9 @@ def test_s7_19_higher_effort_is_stated_as_not_better() -> None:
     assert "high, extra-high and max" in body
     assert "did not find more" in body
     assert "Fable 5.2 extra-high and max were not run" in body
-    assert "took about seven times longer at most" in flat(text())
+    # S7-25: the model paragraph moved to docs/how-we-tested.md; the README keeps "More effort did not find more".
+    assert "took about seven times longer at most" in flat(doc("how-we-tested.md"))
+    assert "More effort did not find more" in flat(text())
 
 
 def test_s7_19_how_we_tested_is_stated() -> None:
@@ -279,9 +289,10 @@ def test_s7_19_no_default_effort_wording() -> None:
 # Review round 1 of PR #4 (MEDIUM 1 to 4): no claim about Fable settings that were not run, the 1,200 words named as
 # the benchmark's cap (the method asks for 900), the Opus extra-high median, and the tie for the best score stated.
 def test_s7_19_fable_extra_high_and_max_not_claimed() -> None:
-    screen = first_screen()
-    assert "With Claude Fable 5.2 and Claude Opus 5.5" not in screen
-    assert "(extra-high and max were not run)" in screen
+    # S7-25: the model paragraph moved from the first screen to docs/how-we-tested.md.
+    page = flat(doc("how-we-tested.md"))
+    assert "With Claude Fable 5.2 and Claude Opus 5.5" not in page + flat(text())
+    assert "(extra-high and max were not run)" in page
 
 
 def test_s7_19_word_cap_is_the_benchmarks_not_the_methods() -> None:
@@ -333,7 +344,7 @@ def test_no_tracked_file_names_an_outside_project() -> None:
 # Added in S7 (owner 17 Nov, S7-1): the mode named up front. The release banner's test is in tests/test_repo.py (S7-9).
 def test_mode_is_named_before_the_install_steps() -> None:
     section = flat(text()).split("## Run it in Claude Code")[1]
-    before_install = section.split("**1. Install it**")[0]
+    before_install = section.split("1. **Install it.**")[0]  # S7-25: the step heading is now "1. **Install it.**"
     assert "plan mode" in before_install
     assert "Shift+Tab" in before_install
     assert "is meant to keep Claude reading" in before_install  # review round 1, finding 3: keep the hedge
@@ -341,8 +352,10 @@ def test_mode_is_named_before_the_install_steps() -> None:
 
 # Added in S7 (the walker load proof, 17 Nov): without --all, gh lists the skill and installs nothing when no one can
 # answer its prompt; and a Claude Code session already open did not see a newly installed skill.
+# Locked check changed under S7-25 A (owner, 22 Nov 2026): this content moved from the README to a docs/ page,
+# so the check reads that page (or the README together with it).
 def test_gh_install_needs_no_prompt_and_claude_code_starts_after() -> None:
-    body = flat(text())
+    body = flat(text() + doc("install-options.md") + doc("other-tools.md"))
     assert "gh skill install hevelius-ai/aschecked --agent claude-code --all" in body
     assert "2.94 or later" in body  # `--all` arrived in gh 2.94 (cli/cli release notes)
     assert "Start Claude Code after installing it" in body
@@ -363,22 +376,24 @@ def test_which_version_it_reviews() -> None:
         "Work in progress",
         "not built yet",
         "other branches",
-        "In our test",
         "git checkout",
         "Download ZIP",
-        "separate list",
-        "not ranked",
-        "after seeing the results",
+        "separately",
+        "(docs/how-we-tested.md)",
     ):
         assert phrase in section, phrase
+    # S7-25: the test result and the counting change moved to docs/how-we-tested.md, linked from this section.
+    tested = flat(doc("how-we-tested.md")).split("## The work-in-progress test")[1].split(" ## ")[0]
+    for phrase in ("In our test", "separate list", "after seeing the results"):
+        assert phrase in tested, phrase
     for model in ("Claude Opus 5.5", "Claude Fable 5.2", "Claude Sonnet 5.5"):
-        assert model in section, model
+        assert model in tested, model
 
 
 # Added in review round 1 (finding 5): the run steps point to choosing the branch before the review starts.
 def test_run_steps_point_to_choosing_the_branch() -> None:
     body = flat(text())
-    claude_step_3 = body.split("**3. Start the review.**")[1].split("**4. Read the report.**")[0]
+    claude_step_3 = body.split("3. **Start the review.**")[1].split("4. **Read the report.**")[0]  # S7-25 headings
     assert "Which version it reviews" in claude_step_3
     chat_steps = body.split("## Run it in a chat (claude.ai)")[1].split(" ## ")[0]
     assert "Which version it reviews" in chat_steps
@@ -387,14 +402,20 @@ def test_run_steps_point_to_choosing_the_branch() -> None:
 # Added in S7-14 (owner, 18 Nov 2026; design R-a and R-e): Sonnet stopping early, how to remove AsChecked, and the
 # npx route in the form proven on 18 Nov (skills 1.9.0: -a claude-code -y installs into .claude/skills and
 # `npx skills remove aschecked` removes it).
+# Locked check changed under S7-25 A (owner, 22 Nov 2026): this content moved from the README to a docs/ page,
+# so the check reads that page (or the README together with it).
 def test_sonnet_stopped_early_is_stated() -> None:
-    model_paragraph = flat(text()).split("**The AI model and its effort setting matter more than the tool.**")[1]
+    model_paragraph = flat(doc("how-we-tested.md")).split(
+        "**The AI model and its effort setting matter more than the tool.**"
+    )[1]
     model_paragraph = model_paragraph.split(" ## ")[0]
     assert "Claude Sonnet 5.5 stopped early" in model_paragraph
 
 
+# Locked check changed under S7-25 A (owner, 22 Nov 2026): this content moved from the README to a docs/ page,
+# so the check reads that page (or the README together with it).
 def test_how_to_remove_it() -> None:
-    body = flat(text())
+    body = flat(doc("install-options.md"))
     assert "**To remove AsChecked:**" in body
     remove = body.split("**To remove AsChecked:**")[1].split("**2.")[0]
     for phrase in (
@@ -409,13 +430,15 @@ def test_how_to_remove_it() -> None:
 
 
 def test_npx_route_names_the_agent_and_needs_no_prompt() -> None:
-    assert "`npx skills add hevelius-ai/aschecked -a claude-code -y`" in flat(text())
+    assert "`npx skills add hevelius-ai/aschecked -a claude-code -y`" in flat(doc("install-options.md"))  # S7-25
 
 
 # Added for the owner's S7-16 (18 Nov 2026): the README states what the git safety covers and where it stops.
 # The count was first written as 20; the bench has 19 setups (corrected after the reviewer's re-check).
+# Locked check changed under S7-25 A (owner, 22 Nov 2026): this content moved from the README to a docs/ page,
+# so the check reads that page (or the README together with it).
 def test_git_settings_limit_is_stated() -> None:
-    body = flat(text())
+    body = flat(doc("git-safety.md"))
     assert "**Git settings:**" in body
     limit = body.split("**Git settings:**")[1].split(" ## ")[0][:900]
     for phrase in (
@@ -441,8 +464,10 @@ def between(body: str, start: str, end: str) -> str:
 
 # Round 1 review (MEDIUM): the files' place must be right for both scopes, and the warning must not read as
 # belonging to the case where nothing is installed.
+# Locked check changed under S7-25 A (owner, 22 Nov 2026): this content moved from the README to a docs/ page,
+# so the check reads that page (or the README together with it).
 def test_s7_20_gh_install_warning_is_explained() -> None:
-    route = between(flat(text()), "**With the GitHub CLI**", "**With the skills command**")
+    route = between(flat(doc("install-options.md")), "**With the GitHub CLI**", "**With the skills command**")
     for phrase in (
         "When it installs, it warns that skills are not verified by GitHub",
         "review the installed files",
@@ -454,22 +479,24 @@ def test_s7_20_gh_install_warning_is_explained() -> None:
 
 
 def test_s7_20_says_where_to_save_the_report() -> None:
-    step = between(flat(text()), "**4. Read the report.**", "Read-only is an instruction")
+    step = between(flat(text()), "4. **Read the report.**", "The AI reads your project")  # S7-25 headings
     assert "Save the report yourself: copy it into a text file" in step
     assert "outside your project's folder" in step
     assert "show up as a change" in step
 
 
 def test_s7_20_says_how_to_download_the_prompt_file() -> None:
-    chat = between(flat(text()), "## Run it in a chat (claude.ai)", "## Which version it reviews")
+    chat = between(flat(text()), "## Run it in a chat (claude.ai)", "## Other tools")  # S7-25: sections reordered
     assert "**Download raw file**" in chat
 
 
 # Added for the owner's S7-21 B (19 to 22 Nov 2026): Codex, Cursor, Antigravity, Lovable and Bolt were each tried once
 # with the v1 skill on our own test projects (scores: independent scorer, records S7-21-SCORES). "Worked" needs the
 # required report form, no file changed and the most serious known problem found; nothing is called proven.
+# Locked check changed under S7-25 A (owner, 22 Nov 2026): this content moved from the README to a docs/ page,
+# so the check reads that page (or the README together with it).
 def other_tools() -> str:
-    return between(flat(text()), "## Other tools", "## Results")
+    return flat(doc("other-tools.md")).split("[README](../README.md).", 1)[1]
 
 
 def bullet(name: str) -> str:
@@ -566,3 +593,41 @@ def test_s7_21_untried_tools_say_so() -> None:
 def test_s7_21_nothing_is_called_proven() -> None:
     section = other_tools().lower()
     assert not re.search(r"(?<!not yet )\bproven\b", section.replace("not yet proven", ""))
+
+
+# Added for the owner's S7-25 A (22 Nov 2026): the README is one simple screen for people who build with AI and do not
+# code; the technical detail moves to pages in docs/ that the README links. Safety lines stay in the README.
+DOCS = ROOT / "docs"
+DOC_PAGES = ("how-we-tested.md", "other-tools.md", "install-options.md", "git-safety.md")
+
+
+def doc(name: str) -> str:
+    return (DOCS / name).read_text(encoding="utf-8")
+
+
+def test_s7_25_readme_is_short() -> None:
+    words = len(text().split())
+    assert words <= 900, f"README has {words} words; the cap is 900"
+
+
+def test_s7_25_docs_pages_exist_and_the_readme_links_each() -> None:
+    for name in DOC_PAGES:
+        assert (DOCS / name).is_file(), name
+        assert f"(docs/{name})" in text(), f"README does not link docs/{name}"
+
+
+def test_s7_25_safety_lines_stay_in_the_readme() -> None:
+    body = flat(text())
+    for phrase in ("plan mode", "keep planning", "warning sign", "including any keys", "not an audit"):
+        assert phrase in body, phrase
+    assert re.search(r"never (says|tells you)[^.]*safe", body), "never says a project is safe"
+
+
+def test_s7_25_links_in_the_docs_pages_resolve() -> None:
+    for name in DOC_PAGES:
+        targets = re.findall(r"\]\(([^)\s]+)\)", doc(name))
+        local = [t for t in targets if not re.match(r"[a-z]+:", t) and not t.startswith("#")]
+        assert "../README.md" in local, f"{name} does not link back to the README"
+        for target in local:
+            assert (DOCS / target.split("#")[0]).resolve().exists(), f"{name}: {target}"
+    assert "## A zip of your project" in doc("install-options.md")  # the README's chat step links this anchor
