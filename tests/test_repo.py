@@ -39,10 +39,14 @@ def test_readme_carries_the_release_banner() -> None:
     assert "In development, not ready to use" not in first_screen
     assert "> **Version 1.**" in first_screen
     assert "cannot confirm that anything is secure" in first_screen
-    # PR #5 review round 1 (MEDIUM): the banner names where and with which setting the benchmark was passed.
+    # PR #5 review round 1 (MEDIUM): the banner names where and with which setting it was tested. Locked check changed
+    # under S7-25 A (owner, 22 Nov 2026): the benchmark ran on the method before the plain-words rule (S7-27), so the
+    # banner claims only what the evidence covers for the released skill and links how it was tested.
     flat_screen = " ".join(re.sub(r"^> ?", "", line) for line in first_screen.splitlines()).split()
     flat_screen = " ".join(flat_screen)
-    assert "passed its benchmark in Claude Code with Claude Fable 5.2 at medium effort" in flat_screen
+    assert "Tested in Claude Code, where Claude Fable 5.2 at medium effort did best" in flat_screen
+    assert "(docs/how-we-tested.md)" in flat_screen
+    assert "passed its benchmark" not in flat_screen
 
 
 def test_line_endings_are_forced_to_lf() -> None:
