@@ -425,7 +425,7 @@ def test_written_log_and_show_carry_short_submodule_diffs() -> None:
 # Before every step, question and command the review now says one plain-words line, then the technical detail.
 def test_s7_27_plain_words_rule_comes_before_the_steps() -> None:
     body = skill_text()
-    assert "## Talk to the owner in plain words" in body
+    assert re.search(r"^## Talk to the owner in plain words$", body, re.M)
     assert body.index("## Talk to the owner in plain words") < body.index("## Steps")
     assert body.index("## Hard limits") < body.index("## Talk to the owner in plain words")
 
@@ -440,6 +440,7 @@ def test_s7_27_plain_words_rule_text() -> None:
         "never promise not to read something",
         "you read the project's files, keys included, and keep values out of everything you write",
         "These lines are conversation, never part of the report",
+        "Then the technical detail as usual.",
     ):
         assert phrase in rule, phrase
 
@@ -463,4 +464,9 @@ def test_s7_27_intake_questions_in_plain_words() -> None:
         '"Answer in a few words each, or say skip if you\'re not sure and I will work it out from your README."',
     ):
         assert phrase in intake, phrase
-    assert "infer from the README" in intake, "the automatic-run rule stays"
+    # Round 1 review (MEDIUM): the automatic-run rule and "asked once" are pinned in full.
+    assert "Ask the owner three questions once, in these words:" in intake
+    assert (
+        "If there is no answer (an automatic run), infer from the README and any public page, "
+        "and mark each item as told or inferred."
+    ) in intake
