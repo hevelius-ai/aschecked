@@ -479,10 +479,15 @@ def test_s7_28_citations_are_re_read_before_the_report() -> None:
     assert "8. **Check every citation.**" in steps
     check = steps.split("8. **Check every citation.**", 1)[1].split("9. **", 1)[0]
     for phrase in (
-        "Before writing the report, open again each file and line you cite",
-        'including "Also found" lines',
-        "confirm the line shows what you say",
-        "correct the line number, or drop the citation",
+        "Before writing the report, open again each file and line or range you cite",
+        '"Also found" and the work-in-progress lines',
+        "confirm it shows what you say",
+        "correct the line number",
+        # S7-28 review round 1 (MEDIUM): a flagged file is checked without showing the flagged line.
+        "For a file the secret search flagged, confirm the number only with the secret-safe search",
+        "`grep -nH '<pattern>' <file> | cut -d: -f1,2`",
+        "never by showing the flagged line",
+        "If no line in the project shows the claim, drop the claim, or say plainly what is missing",
         "the first line is 1",
         "never past the file's last line",
     ):
