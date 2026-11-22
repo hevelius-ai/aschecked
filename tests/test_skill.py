@@ -419,3 +419,48 @@ def test_written_log_and_show_carry_short_submodule_diffs() -> None:
             words = command.split()
             if "log" in words or "show" in words:
                 assert "diff.submodule=short" in words, f"{path.name}: {command}"
+
+
+# Added for the owner's S7-27 A (22 Nov 2026): people who do not code met technical prompts they could not follow.
+# Before every step, question and command the review now says one plain-words line, then the technical detail.
+def test_s7_27_plain_words_rule_comes_before_the_steps() -> None:
+    body = skill_text()
+    assert "## Talk to the owner in plain words" in body
+    assert body.index("## Talk to the owner in plain words") < body.index("## Steps")
+    assert body.index("## Hard limits") < body.index("## Talk to the owner in plain words")
+
+
+def test_s7_27_plain_words_rule_text() -> None:
+    rule = flat(section("Talk to the owner in plain words"))
+    for phrase in (
+        "Before every step, question and command (file reads and searches included)",
+        "a person who does not code understands",
+        "what you are about to do, what it checks, and that nothing in their project changes",
+        "Never quote file contents in that line",
+        "never promise not to read something",
+        "you read the project's files, keys included, and keep values out of everything you write",
+        "These lines are conversation, never part of the report",
+    ):
+        assert phrase in rule, phrase
+
+
+def test_s7_27_plain_words_example_never_promises_not_to_see() -> None:
+    rule = flat(section("Talk to the owner in plain words"))
+    assert (
+        '"Next: looking for passwords or keys left in your files. I note only where they are and never repeat them. '
+        'Nothing is changed."'
+    ) in rule
+    assert "never what they say" not in rule and "only see" not in rule
+
+
+def test_s7_27_intake_questions_in_plain_words() -> None:
+    steps = flat(section("Steps"))
+    intake = steps.split("1. **Intake.**", 1)[1].split("2. **", 1)[0]
+    for phrase in (
+        '"What does your app do, and who uses it?"',
+        '"What did you change or add recently?"',
+        '"Is anything true today that the code would not show, for example it is not live yet, or only you use it?"',
+        '"Answer in a few words each, or say skip if you\'re not sure and I will work it out from your README."',
+    ):
+        assert phrase in intake, phrase
+    assert "infer from the README" in intake, "the automatic-run rule stays"
