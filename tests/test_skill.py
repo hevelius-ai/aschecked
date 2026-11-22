@@ -485,7 +485,7 @@ def test_s7_28_citations_are_re_read_before_the_report() -> None:
         "correct the line number",
         # S7-28 review round 1 (MEDIUM): a flagged file is checked without showing the flagged line.
         "For a file the secret search flagged, confirm the number only with the secret-safe search",
-        "`grep -nH '<pattern>' <file> | cut -d: -f1,2`",
+        "`grep -nHE '<pattern>' <file> | cut -d: -f1,2`",
         "never by showing the flagged line",
         "If no line in the project shows the claim, drop the claim, or say plainly what is missing",
         "the first line is 1",
