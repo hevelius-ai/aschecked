@@ -27,22 +27,23 @@ The AI model matters more than the tool. Our test: four projects, 19 known probl
 | Claude Opus 5.5, medium | 14.7 | 11 of 12 |
 | Claude Fable 5.2, low | 14.3 | 12 of 12 |
 
-More effort did not find more, and Claude Sonnet 5.5 stopped early. Full results:
-[how we tested](docs/how-we-tested.md).
+For Claude Fable 5.2 and Claude Opus 5.5, more effort than medium did not find more.
+[How we tested](docs/how-we-tested.md).
 
 ## Run it in Claude Code
 
-**It only reads.** In Claude Code it runs in **plan mode**, which is meant to keep Claude reading and planning
-instead of changing your files. You switch it on in step 3 (press Shift+Tab until it shows plan mode).
+**It is meant only to read.** In Claude Code it runs in **plan mode**, which is meant to keep Claude reading
+instead of changing your files; switch it on in step 3 (press Shift+Tab until it shows plan mode). Do not start the
+review in auto-accept or bypass-permissions mode.
 
 1. **Install it.** Open a terminal in your project's folder and run
    `gh skill install hevelius-ai/aschecked --agent claude-code --all` (needs the GitHub CLI). No terminal? On this
-   page click **Code**, then **Download ZIP**, unzip it, and copy its `skills/aschecked` folder into your project as
+   page click **Code**, then **Download ZIP**, and copy its `skills/aschecked` folder into your project as
    `.claude/skills/aschecked`. Then start Claude Code. [Other ways to install it, and how to remove
    it](docs/install-options.md).
 2. **Check your instruction files.** Your AI tool reads files such as `CLAUDE.md`, `AGENTS.md` or `.cursorrules` by
    itself. If you did not write them, read them first: text telling an AI how to review your project, or to say it is
-   fine, is a warning sign.
+   fine, is a warning sign. AsChecked reports such text, but it cannot stop your tool from loading the file.
 3. **Start the review.** Open the version you want reviewed (see "Which version it reviews"). Start Claude Code
    with `claude --model fable --effort medium`, switch to plan mode and type `/aschecked`. It asks three short
    questions; answer them, or say "skip". Before each step it says in plain words what it will check.
@@ -50,8 +51,8 @@ instead of changing your files. You switch it on in step 3 (press Shift+Tab unti
    answer, and approving would let it start changing your project. Save the report yourself: copy it into a text file
    outside your project's folder, so it does not show up as a change in your project.
 
-The AI reads your project's files, including any keys written into them. The report never shows a key's value: it names a key by its kind, file, line and length. Read-only is an instruction the
-AI is asked to follow; [what that covers and where it stops](docs/git-safety.md).
+The AI reads your project's files, including any keys written into them. The report never shows a key's value: it
+names a key by its kind, file, line and length. [What read-only covers, and where it stops](docs/git-safety.md).
 
 ## Which version it reviews
 
@@ -68,17 +69,17 @@ It reviews the branch you have open, and may look at your other branches for unm
 
 1. Download your project as a zip from the branch you want reviewed (see "Which version it reviews"): on GitHub,
    **Code**, then **Download ZIP** ([from Lovable, Bolt or Replit](docs/install-options.md#a-zip-of-your-project)).
-2. Start a new chat with Claude Fable 5.2 (or Claude Opus 5.5); if the chat offers an effort setting, choose medium.
-   Upload two files: the zip, and [`paste/aschecked-prompt.md`](paste/aschecked-prompt.md) from this repository (open
-   the link on GitHub and click **Download raw file**).
+2. Start a new chat with Claude Fable 5.2 (or Claude Opus 5.5), medium effort if offered. Upload the zip and
+   [`paste/aschecked-prompt.md`](paste/aschecked-prompt.md) from this repository (open the link on GitHub and click
+   **Download raw file**).
 3. Type: "Run the AsChecked review in the attached prompt file on the attached project."
 
 Our tests ran in Claude Code; a chat is not yet proven to reach the same results.
 
 ## Other tools
 
-AsChecked is packaged for Codex, Cursor, Antigravity, Devin Desktop, Kilo, Cline, Lovable, Bolt and Replit, but it is
-not yet proven in any of them: we tried five of them once, and most fell short. [How each did](docs/other-tools.md).
+Also packaged for Codex, Cursor, Antigravity, Devin Desktop, Kilo, Cline, Lovable, Bolt and Replit, but not yet
+proven in any: of the five we tried, most fell short. [How each did](docs/other-tools.md).
 
 ## Licence
 

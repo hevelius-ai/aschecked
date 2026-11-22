@@ -4,7 +4,8 @@ Back to the [README](../README.md).
 
 **1. Install it** (one of these):
 
-- **By hand:** on this page, click **Code**, then **Download ZIP**, and unzip it. Copy its `skills/aschecked`
+- **By hand:** on the AsChecked GitHub page (https://github.com/hevelius-ai/aschecked), click **Code**, then
+  **Download ZIP**, and unzip it. Copy its `skills/aschecked`
   folder into your project's `.claude/skills` folder, so that it ends up as `.claude/skills/aschecked` (create the
   `.claude` and `skills` folders if they are missing). To use it in every project, copy it to
   `~/.claude/skills/aschecked` in your home folder instead. On a Mac, Finder hides folders whose names start with
@@ -34,3 +35,8 @@ takes it out of `skills-lock.json`.
 For the chat route you need your project as a zip, from the branch you want reviewed. On GitHub: **Code**, then
 **Download ZIP**. In Bolt or Replit, use their download or export. Lovable's own zip download is on paid plans only;
 on a free plan, sync your project to GitHub and use GitHub's **Download ZIP**.
+
+## Effort setting
+
+Start Claude Code with `claude --model fable --effort medium`. If you have set the `CLAUDE_CODE_EFFORT_LEVEL`
+environment variable, it overrides `--effort`.

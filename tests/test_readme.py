@@ -259,7 +259,8 @@ def test_s7_19_higher_effort_is_stated_as_not_better() -> None:
     assert "Fable 5.2 extra-high and max were not run" in body
     # S7-25: the model paragraph moved to docs/how-we-tested.md; the README keeps "More effort did not find more".
     assert "took about seven times longer at most" in flat(doc("how-we-tested.md"))
-    assert "More effort did not find more" in flat(text())
+    # S7-25 review round 1 (MEDIUM): the README's line is limited to the two models it holds for.
+    assert "For Claude Fable 5.2 and Claude Opus 5.5, more effort than medium did not find more" in flat(text())
 
 
 def test_s7_19_how_we_tested_is_stated() -> None:
@@ -618,7 +619,16 @@ def test_s7_25_docs_pages_exist_and_the_readme_links_each() -> None:
 
 def test_s7_25_safety_lines_stay_in_the_readme() -> None:
     body = flat(text())
-    for phrase in ("plan mode", "keep planning", "warning sign", "including any keys", "not an audit"):
+    for phrase in (
+        "plan mode",
+        "keep planning",
+        "warning sign",
+        "including any keys",
+        "not an audit",
+        # S7-25 review round 1 (HIGH and MEDIUM): the mode warning and the D6 limit stay in the README.
+        "Do not start the review in auto-accept or bypass-permissions mode",
+        "cannot stop your tool from loading the file",
+    ):
         assert phrase in body, phrase
     assert re.search(r"never (says|tells you)[^.]*safe", body), "never says a project is safe"
 
@@ -631,3 +641,30 @@ def test_s7_25_links_in_the_docs_pages_resolve() -> None:
         for target in local:
             assert (DOCS / target.split("#")[0]).resolve().exists(), f"{name}: {target}"
     assert "## A zip of your project" in doc("install-options.md")  # the README's chat step links this anchor
+
+
+# S7-25 review round 1 (MEDIUM): the sandbox results, the missed pass mark and the stated limits are guarded.
+def test_s7_26_sandbox_results_and_limits_are_stated() -> None:
+    page = flat(doc("how-we-tested.md"))
+    assert "## Sandbox test of the released version" in page
+    sandbox = page.split("## Sandbox test of the released version")[1]
+    for phrase in (
+        "18 of 18",
+        "20 of 24",
+        "at least 22 of 24",
+        "We fixed the pass marks before the runs",
+        "planted problems are easier to find than real ones",
+        "we wrote the apps ourselves",
+        "With their own checks",
+        "Without",
+        "the benchmark above remain the main evidence",
+    ):
+        assert phrase in sandbox, phrase
+    assert "did not cause it" not in sandbox
+
+
+def test_s7_25_moved_sentences_kept() -> None:
+    assert "`CLAUDE_CODE_EFFORT_LEVEL`" in flat(doc("install-options.md"))
+    assert "on this page, click" not in flat(doc("install-options.md"))
+    page = flat(doc("how-we-tested.md"))
+    assert "Benchmark of this version" not in page and "this version of the method" not in page
