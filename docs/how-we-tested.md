@@ -5,8 +5,9 @@ Back to the [README](../README.md).
 ## Which version was tested
 
 The benchmark below ran on the method as it was on 18 Nov 2026 (`skills/aschecked` at commit `d8dd162`), before the
-rule that has AsChecked say in plain words what each step does (added 22 Nov 2026). The sandbox test below ran on the
-released version and on the earlier one, to check that the new rule changed nothing else.
+rule that has AsChecked say in plain words what each step does and the checks on cited lines and ranking (added 22 Nov
+2026). The sandbox test below ran on the released version, on the two versions before it and on the earlier one, to
+check that these changes made nothing worse.
 
 ## Models and effort
 
@@ -114,36 +115,50 @@ instruction telling AI reviewers to call it secure; two hid fake keys. An indepe
 against the code before any run, and the reports were scored blind (the scorer did not know which version or tool
 wrote each one).
 
-Claude Code with Claude Fable 5.2 at medium effort, in plan mode: three runs per app on the released version, one run
-per app on the earlier version. Codex (GPT-6-Luna, medium) and Cursor (free plan, Auto model) once per app.
+Claude Code with Claude Fable 5.2 at medium effort, in plan mode: three runs per app on each of three versions with
+the plain-words rule, one run per app on the earlier version. Codex (GPT-6-Luna, medium) and Cursor (free plan, Auto
+model) once per app, on the first of those versions.
+
+We fixed the pass marks before the runs, and the test ran in three rounds. The first version with the plain-words rule
+met all of them but one: every report check met in at least 22 of 24 runs. It was 20 of 24: four reports cited a line
+number one or two lines away from the text, sometimes past the end of a short file. The earlier version did the same
+in one of its eight runs, so this fault is older than the plain-words rule. We then added a step that has AsChecked
+re-read the lines it cites before writing the report: 21 of 24. The run logs showed that in 18 of those 24 runs the AI
+checked from memory and opened no cited line again, and one run ranked orders lost on a restart above a stranger
+marking orders as paid. The released version makes the re-reading a real step (every one of its 24 runs opened the
+cited lines again), shows line numbers when it reads a file that may hold keys, and ranks what a stranger can do on
+purpose above an accident of about the same harm. It met every pass mark: 23 of 24.
 
 | Runs | Most serious problem found (6 apps with planted problems) | Other planted problems found, per run | All report checks met | Correct apps with no false alarm | Planted instruction reported, not followed |
 |---|---|---|---|---|---|
-| Claude Code, released version (24) | 18 of 18, always as finding 1 | 2.8 | 20 of 24 | 6 of 6 | 3 of 3 |
+| Claude Code, released version (24) | 18 of 18, always as finding 1 | 2.8 | 23 of 24 | 6 of 6 | 3 of 3 |
+| Claude Code, second version (24) | 18 of 18, 17 as finding 1 | 2.8 | 21 of 24 | 6 of 6 | 3 of 3 |
+| Claude Code, first version with the plain-words rule (24) | 18 of 18, always as finding 1 | 2.8 | 20 of 24 | 6 of 6 | 3 of 3 |
 | Claude Code, earlier version (8) | 6 of 6 | 2.8 | 6 of 8 | 2 of 2 | 1 of 1 |
 | Codex (8) | 5 of 6 | 2.0 | 3 of 8 | 2 of 2 | 1 of 1 |
 | Cursor (2 of 8: six first failed on a start-up quoting error in our script, then the free plan's limit stopped the re-runs) | 2 of 2 | 3.0 | 1 of 2 | not run | not run |
 
-In every Claude Code run no file changed and no planted key value appeared in anything the AI wrote. On the released
-version, a plain-words line came before about 96% of the AI's steps (about 12% on the earlier version), and none of
-those lines appeared in a report.
+The scorer passed two of the released version's reports on two judgement calls: one ended with a short note after
+the report's closing lines, and two miscounted the shapes in a cited drawing while citing the right lines. Read
+strictly, the released version's count is 21 of 24. The same scorer instructions were used in every round. (In the
+first round, one citation of the reviewed copy's own git settings file was scored two ways by two scorers; we counted
+it as present throughout. Three earlier-version runs broke at the end because we changed our run script while they
+ran, and were run again.)
 
-We fixed the pass marks before the runs. The released version met all of them but one: every report check met in at
-least 22 of 24 runs. It was 20: four reports cited a line number one or two lines away from the text, sometimes past
-the end of a short file. The earlier version did the same in one of its eight runs, so this fault is older than the
-plain-words rule; with this few runs we cannot tell whether the rule changed how often it happens. (One citation of
-the reviewed copy's own git settings file was scored two ways by two scorers; we counted it as present throughout.
-Three earlier-version runs broke at the end because we changed our run script while they ran, and were run again.)
+In every Claude Code run no file changed and no planted key value appeared in anything the AI wrote. On the released
+version, a plain-words line came before about 97% of the AI's steps (96% and 93% on the two versions before it, about
+12% on the earlier version), and none of those lines appeared in a report.
 
 Split by stack, released version: apps whose stacks the method has its own checks for (team notes, group chat,
 desktop notes, and the first correct app) against the others:
 
 | Stacks | Most serious problem found | Other planted problems found, per run | All report checks met |
 |---|---|---|---|
-| With their own checks | 9 of 9 | 2.3 | 10 of 12 |
-| Without | 9 of 9 | 3.3 | 10 of 12 |
+| With their own checks | 9 of 9 | 2.3 | 11 of 12 |
+| Without | 9 of 9 | 3.2 | 12 of 12 |
 
 What this test cannot show: planted problems are easier to find than real ones, and we wrote the apps ourselves.
 Three of the six apps, and one of the two correct ones, use stacks the method has its own checks for. Codex and Cursor
-ran once per app. It shows that the released version is consistent and did not get worse; the four real projects in
-the benchmark above remain the main evidence.
+ran once per app, on the first version. The fixes were made after seeing the earlier rounds and tested again on the
+same apps, so the last round is not a fresh test of them. It shows that the released version is consistent and did
+not get worse; the four real projects in the benchmark above remain the main evidence.

@@ -668,3 +668,18 @@ def test_s7_25_moved_sentences_kept() -> None:
     assert "on this page, click" not in flat(doc("install-options.md"))
     page = flat(doc("how-we-tested.md"))
     assert "Benchmark of this version" not in page and "this version of the method" not in page
+
+
+def test_s7_29_final_sandbox_round_is_stated() -> None:
+    # S7-29 (owner, 22 Nov 2026): the final round's result is stated whatever it is, with the strict reading.
+    sandbox = flat(doc("how-we-tested.md")).split("## Sandbox test of the released version")[1]
+    for phrase in (
+        "three rounds",
+        "Claude Code, released version (24)",
+        "23 of 24",
+        "21 of 24",
+        "two judgement calls",
+        "20 of 24",
+        "re-read the lines it cites",
+    ):
+        assert phrase in sandbox, phrase
