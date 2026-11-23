@@ -871,3 +871,21 @@ def test_s7_31_chat_steps() -> None:
         for phrase in phrases:
             assert phrase in step, (number, phrase)
     assert "a chat is not yet proven to reach the same results" in flat(chat)
+
+
+def test_s7_34_new_models_are_checked_the_same_way() -> None:
+    # S7-34 (owner, 23 Nov 2026, "S7-34 B"): how a new model is checked, in plain words, on the testing page.
+    page = flat(doc("how-we-tested.md"))
+    assert "## When a new model comes out" in page
+    section = page.split("## When a new model comes out")[1].split(" ## ")[0]
+    for phrase in (
+        "the same way every time",
+        "scored blind in one batch",
+        "at least 15 of the 19 known problems",
+        "in at least 11 of 12 reports",
+        "at least 2 more on average",
+        "costs at least $0.25 less per review",
+        "the eight-app sandbox",
+        "Each completed check is added to this page",
+    ):
+        assert phrase in section, phrase
