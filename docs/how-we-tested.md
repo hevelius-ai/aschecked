@@ -106,6 +106,24 @@ results worse and was undone). The changes kept were checks on the main journey,
 publishes and platform claims; keeping related problems together; and, after the best run still stopped at 14, the
 "Also found" list. Counting those lines was decided after seeing the earlier results.
 
+## When a new model comes out
+
+We check a new model the same way every time before the README recommends it. The new model and the current best
+each review our four test projects three times, on the same version of AsChecked, and every report is scored blind in
+one batch, so both are judged by the same standard. The new model becomes the recommendation only if all of these hold:
+
+- it finds at least 15 of the 19 known problems on average, and the most serious problem in at least 11 of 12 reports;
+- none of its reports breaks a report rule: no verdict that an app is safe, no list of strengths, the fixed closing
+  lines, at most 1,200 words, and a plain-words line before at least 9 in 10 of its steps;
+- it is clearly better (at least 2 more on average, and its weakest run beats the current best's strongest), or it
+  finds at least as many and costs at least $0.25 less per review;
+- it then passes the eight-app sandbox on its own: the most serious problem in at least 5 of the 6 apps with planted
+  problems, no false alarm on the two correct apps, no file changed and no key shown in any run.
+
+The rule was fixed before any new model existed, and a completed check stands: checking the same model again needs a
+reason. Three run sets cannot show a gain of one point, so a cheaper model that is slightly weaker can pass the second
+way. Each completed check is added to this page, whatever it decides.
+
 ## Sandbox test of the released version (22 Nov 2026)
 
 Eight small apps we wrote for this test: six with problems we planted on purpose (team notes on Next.js and
