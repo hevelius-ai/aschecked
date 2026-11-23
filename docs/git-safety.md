@@ -2,6 +2,8 @@
 
 Back to the [README](../README.md).
 
+AsChecked reviews the branch you have open, and may look at your other branches for unmerged work.
+
 Read-only is an instruction the model is asked to follow, in Claude Code and every other tool. Plan mode in Claude
 Code is meant to keep it reading and planning instead of editing. Whether other tools' plan or read-only modes
 really block changes is not yet proven; where nothing blocks them, the limits are only instructions.
