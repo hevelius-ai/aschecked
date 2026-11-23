@@ -396,7 +396,7 @@ def test_which_version_it_reviews() -> None:
 # the steps no longer point to a section; choosing the version is review step 3 itself
 # (test_s7_31_review_steps), and nothing in the README points to another part of it (test_s7_31_no_cross_references).
 def test_run_steps_point_to_choosing_the_branch() -> None:
-    step = re.split(r"^\d+\. ", part("Run a review"), flags=re.M)[3]
+    step = re.split(r"^\d+\. ", part("Run a review"), flags=re.M)[2]  # S7-31 walkthrough w5 (F1): step 2
     assert step.startswith("**Choose the version.**")
     assert "Which version it reviews" not in text()
 
@@ -817,6 +817,8 @@ def test_s7_31_three_settings_only() -> None:
 
 REVIEW_STEPS = [
     ("**Open a terminal in your project's folder.**", "Open in Terminal", "New Terminal at Folder"),
+    # S7-31 walkthrough w5 (F1, MEDIUM): choose the version first, then check that version's instruction files.
+    ("**Choose the version.**", "`git checkout main`", "another branch"),
     (
         "**Check your instruction files.**",
         "`CLAUDE.md`",
@@ -825,7 +827,6 @@ REVIEW_STEPS = [
         "warning sign",
         "AsChecked reports such text, but it cannot stop your tool from loading the file",
     ),
-    ("**Choose the version.**", "`git checkout main`", "another branch"),
     ("**Start Claude Code.**", "`claude --model fable --effort medium`", "`claude --model opus --effort medium`"),
     (
         "**Switch on plan mode.**",

@@ -69,14 +69,14 @@ To update it later, paste the message from this page again: it always names the 
 
 1. **Open a terminal in your project's folder.** On Windows, right-click inside the folder and choose Open in
    Terminal. On a Mac, right-click the folder in Finder and choose Services, then New Terminal at Folder.
-2. **Check your instruction files.** Look in your project's folder for files like `CLAUDE.md`, `AGENTS.md` or
+2. **Choose the version.** For your finished app, type `git checkout main` (or `git checkout master`, if that is its
+   name) and press Enter. For work still on another branch, type `git checkout` and that branch's name, and press
+   Enter. Not using git? Go on.
+3. **Check your instruction files.** Look in your project's folder for files like `CLAUDE.md`, `AGENTS.md` or
    `.cursorrules` (a Mac hides names that start with a dot: press Cmd+Shift+period in Finder). Your AI tool reads them
    by itself. If you did not write one, read it: text telling an AI how to review your project, or to say it is fine,
    is a warning sign. AsChecked reports such text, but it cannot stop your tool from loading the file. If there are
    none, go on.
-3. **Choose the version.** For your finished app, type `git checkout main` (or `git checkout master`, if that is its
-   name) and press Enter. For work still on another branch, type `git checkout` and that branch's name, and press
-   Enter. Not using git? Go on.
 4. **Start Claude Code.** Type `claude --model fable --effort medium` and press Enter. Without Claude Fable 5.2 in your
    plan, type `claude --model opus --effort medium` instead. If it asks whether you trust this folder, choose
    **Yes**.
