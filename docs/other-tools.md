@@ -40,7 +40,7 @@ is not proof.
   instructions as project text. Bolt then added a new version to the project's history; whether that changed a file
   was not checked. Not yet proven.
 - **Replit:** not tried (needs a paid plan): Replit documents skills and its Plan mode for paid plans only. Not yet
-  proven. On any plan, you can download your project from Replit and use "Run it in a chat (claude.ai)" in the README.
+  proven. On any plan, you can download your project from Replit and use "No Claude Code? Use a claude.ai chat" in the README.
 - **Anything else:** paste [`paste/aschecked-prompt.md`](../paste/aschecked-prompt.md) and give it your code. Not yet
   proven.
 

@@ -65,12 +65,15 @@ def first_screen() -> str:
     return flat("\n".join(text().splitlines()[:25]))
 
 
+# Locked check changed under S7-31 (owner, 23 Nov 2026, "S7-31 all leans"; design DESIGN-S7-31.md, test table):
+# the first screen names the recommended models (R5.1 reworded); Sonnet is named on docs/how-we-tested.md.
 def test_first_screen_names_tested_models_and_warning() -> None:
     screen = first_screen()
-    for model in ("Claude Sonnet 5.5", "Claude Fable 5.2", "Claude Opus 5.5"):
+    for model in ("Claude Fable 5.2", "Claude Opus 5.5"):
         assert model in screen, model
     assert "missed serious problems" in screen
     assert "free" in screen
+    assert "Claude Sonnet 5.5" in flat(doc("how-we-tested.md"))
 
 
 def test_start_with_aschecked_in_plan_mode() -> None:
@@ -180,7 +183,7 @@ def test_replit_marked_not_tried_needs_a_paid_plan() -> None:
     bullets = [flat(b) for b in re.split(r"^- ", page, flags=re.M)[1:]]
     replit = [b for b in bullets if b.startswith("**Replit:**")]
     assert len(replit) == 1, "no bullet of its own for Replit"
-    for phrase in ("not tried (needs a paid plan)", "Plan mode", "Run it in a chat"):
+    for phrase in ("not tried (needs a paid plan)", "Plan mode", "Use a claude.ai chat"):  # S7-31: new heading
         assert phrase in replit[0], phrase
     assert not [b for b in bullets if "Replit" in b and not b.startswith("**Replit:**")]
 
@@ -211,8 +214,10 @@ def results_raw() -> str:
 
 
 def test_s7_19_best_setting_is_named_first_and_in_the_start_command() -> None:
+    # S7-31 (test table): the banner says "did best" and the table's first row says "(best)".
     screen = first_screen()
-    assert "the best was **Claude Fable 5.2 at medium effort**" in screen
+    assert "Claude Fable 5.2 at medium effort did best" in screen
+    assert "**Claude Fable 5.2, medium (best)**" in flat(text())
     body = flat(text())
     assert "`claude --model fable --effort medium`" in body
     assert "--effort max" not in body
@@ -259,8 +264,9 @@ def test_s7_19_higher_effort_is_stated_as_not_better() -> None:
     assert "Fable 5.2 extra-high and max were not run" in body
     # S7-25: the model paragraph moved to docs/how-we-tested.md; the README keeps "More effort did not find more".
     assert "took about seven times longer at most" in flat(doc("how-we-tested.md"))
-    # S7-25 review round 1 (MEDIUM): the README's line is limited to the two models it holds for.
-    assert "For Claude Fable 5.2 and Claude Opus 5.5, more effort than medium did not find more" in flat(text())
+    # S7-31 (test table): the effort line moved to docs/how-we-tested.md, limited to the two models it holds for.
+    assert "**More effort did not find more** with Claude Fable 5.2 or Claude Opus 5.5" in flat(doc("how-we-tested.md"))
+    assert "more effort than medium" not in flat(text())
 
 
 def test_s7_19_how_we_tested_is_stated() -> None:
@@ -344,8 +350,8 @@ def test_no_tracked_file_names_an_outside_project() -> None:
 
 # Added in S7 (owner 17 Nov, S7-1): the mode named up front. The release banner's test is in tests/test_repo.py (S7-9).
 def test_mode_is_named_before_the_install_steps() -> None:
-    section = flat(text()).split("## Run it in Claude Code")[1]
-    before_install = section.split("1. **Install it.**")[0]  # S7-25: the step heading is now "1. **Install it.**"
+    # S7-31 (test table): the new headings; the plan-mode line is in "How it works", before "Install it (once)".
+    before_install = flat(text()).split("## Install it (once)")[0]
     assert "plan mode" in before_install
     assert "Shift+Tab" in before_install
     assert "is meant to keep Claude reading" in before_install  # review round 1, finding 3: keep the hedge
@@ -368,21 +374,15 @@ def test_gh_install_needs_no_prompt_and_claude_code_starts_after() -> None:
 # Added in S7 (owner's S7-4 and S7-8A, 17 Nov): both uses, a finished project and work in progress, with the
 # evaluation's result and the counting change disclosed.
 def test_which_version_it_reviews() -> None:
-    body = flat(text())
-    assert "## Which version it reviews" in body
-    section = body.split("## Which version it reviews")[1].split(" ## ")[0]
-    for phrase in (
-        "finished project",
-        "main branch",
-        "Work in progress",
-        "not built yet",
-        "other branches",
-        "git checkout",
-        "Download ZIP",
-        "separately",
-        "(docs/how-we-tested.md)",
-    ):
-        assert phrase in section, phrase
+    # S7-31 (test table): the section became review step 3 and the unfinished-work sentence in review step 7 and
+    # chat step 5 (R6.1); "may look at your other branches" moved to docs/git-safety.md. The docs half is unchanged.
+    run = flat(part("Run a review"))
+    for phrase in ("finished app", "`git checkout main`", "another branch", "not built yet", "separately"):
+        assert phrase in run, phrase
+    chat = flat(part("No Claude Code? Use a claude.ai chat"))
+    for phrase in ("**Download ZIP**", "choose it first", "not built yet", "separately"):
+        assert phrase in chat, phrase
+    assert "may look at your other branches for unmerged work" in flat(doc("git-safety.md"))
     # S7-25: the test result and the counting change moved to docs/how-we-tested.md, linked from this section.
     tested = flat(doc("how-we-tested.md")).split("## The work-in-progress test")[1].split(" ## ")[0]
     for phrase in ("In our test", "separate list", "after seeing the results"):
@@ -392,12 +392,13 @@ def test_which_version_it_reviews() -> None:
 
 
 # Added in review round 1 (finding 5): the run steps point to choosing the branch before the review starts.
+# Locked check changed under S7-31 (owner, 23 Nov 2026, "S7-31 all leans"; design DESIGN-S7-31.md, test table):
+# the steps no longer point to a section; choosing the version is review step 3 itself
+# (test_s7_31_review_steps), and nothing in the README points to another part of it (test_s7_31_no_cross_references).
 def test_run_steps_point_to_choosing_the_branch() -> None:
-    body = flat(text())
-    claude_step_3 = body.split("3. **Start the review.**")[1].split("4. **Read the report.**")[0]  # S7-25 headings
-    assert "Which version it reviews" in claude_step_3
-    chat_steps = body.split("## Run it in a chat (claude.ai)")[1].split(" ## ")[0]
-    assert "Which version it reviews" in chat_steps
+    step = re.split(r"^\d+\. ", part("Run a review"), flags=re.M)[3]
+    assert step.startswith("**Choose the version.**")
+    assert "Which version it reviews" not in text()
 
 
 # Added in S7-14 (owner, 18 Nov 2026; design R-a and R-e): Sonnet stopping early, how to remove AsChecked, and the
@@ -480,14 +481,13 @@ def test_s7_20_gh_install_warning_is_explained() -> None:
 
 
 def test_s7_20_says_where_to_save_the_report() -> None:
-    step = between(flat(text()), "4. **Read the report.**", "The AI reads your project")  # S7-25 headings
-    assert "Save the report yourself: copy it into a text file" in step
-    assert "outside your project's folder" in step
-    assert "show up as a change" in step
+    # S7-31 (test table): review step 10, "Save the report".
+    step = between(flat(text()), "10. **Save the report.**", "11. **Fix what it found.**")
+    assert "paste it into a text file outside your project's folder" in step
 
 
 def test_s7_20_says_how_to_download_the_prompt_file() -> None:
-    chat = between(flat(text()), "## Run it in a chat (claude.ai)", "## Other tools")  # S7-25: sections reordered
+    chat = between(flat(text()), "## No Claude Code? Use a claude.ai chat", "## More")  # S7-31: new headings
     assert "**Download raw file**" in chat
 
 
@@ -608,7 +608,7 @@ def doc(name: str) -> str:
 
 def test_s7_25_readme_is_short() -> None:
     words = len(text().split())
-    assert words <= 900, f"README has {words} words; the cap is 900"
+    assert words <= 1300, f"README has {words} words; the cap is 1,300"  # S7-33 (owner, 23 Nov 2026): was 900
 
 
 def test_s7_25_docs_pages_exist_and_the_readme_links_each() -> None:
@@ -696,3 +696,159 @@ def test_s7_29_final_sandbox_round_is_stated() -> None:
         assert phrase in sandbox, phrase
     assert "every one of its 24 runs opened the cited lines again" not in sandbox
     assert "checked from memory" not in sandbox
+
+
+# S7-31 (owner, 23 Nov 2026, "S7-31 all leans"; S7-33 the 1,300-word cap; design DESIGN-S7-31.md version 3, reviewed
+# in three rounds): the README as numbered steps for people who build with AI and do not code, with nothing that sends
+# the reader to another part of it, an install by one pasted prompt, and only the three best settings. Written before
+# the README and seen failing.
+S7_31_HEADINGS = [
+    "What you get",
+    "How it works",
+    "What you need in Claude Code",
+    "Install it (once)",
+    "Run a review",
+    "No Claude Code? Use a claude.ai chat",
+    "More",
+    "Licence",
+]
+
+
+def part(heading: str) -> str:
+    return text().split(f"\n## {heading}\n", 1)[1].split("\n## ", 1)[0]
+
+
+def items(section: str) -> list[str]:
+    return [flat(item) for item in re.split(r"^\d+\. ", section, flags=re.M)[1:]]
+
+
+def fenced_prompt(page: str) -> str:
+    blocks = re.findall(r"```\n(.*?)```", page, re.S)
+    assert len(blocks) == 1, f"{len(blocks)} fenced blocks"
+    return flat(blocks[0])
+
+
+def test_s7_31_readme_parts_in_order() -> None:
+    assert re.findall(r"^## (.+)$", text(), re.M) == S7_31_HEADINGS
+
+
+def test_s7_31_no_cross_references() -> None:
+    body = flat(text()).lower()
+    for phrase in ('see "', " above", " below", "section", "](#", "the same again", "the table"):
+        assert phrase not in body, phrase
+    assert not re.search(r"\bstep \d+\b", body)
+    for link in re.findall(r"\]\(([^)]+)\)", text()):
+        assert link.startswith(("docs/", "paste/", "https://")) or link in ("LICENSE", "LICENSE-CODE"), link
+
+
+def test_s7_31_first_screen() -> None:
+    screen = flat(text().split("\n## ")[0])
+    for phrase in ("Claude Fable 5.2", "Claude Opus 5.5", "weaker or free models missed serious problems"):
+        assert phrase in screen, phrase
+
+
+INSTALL_PROMPT = (
+    "https://github.com/hevelius-ai/aschecked/archive/refs/tags/v1.0.0.zip",
+    "into this folder and unpack it here",
+    "tell me in two sentences what they do",
+    "wait for my yes",
+    "copy that folder to .claude/skills/aschecked in my home folder",
+    "replacing any older copy",
+    "delete what you downloaded and unpacked",
+    "Change nothing else.",
+    '"AsChecked is installed"',
+)
+
+
+def test_s7_31_install_is_a_pasted_prompt() -> None:
+    install = part("Install it (once)")
+    steps = items(install)
+    assert len(steps) == 7, len(steps)
+    prompt = fenced_prompt(install)
+    for phrase in INSTALL_PROMPT:
+        assert phrase in prompt, phrase
+    body = flat(install)
+    for phrase in (
+        "new, empty folder (not your project)",
+        "Open in Terminal",
+        "New Terminal at Folder",
+        "Type `claude`",  # corrected before review: the step starts a sentence
+        "Type `yes`",
+        "`.claude/skills/aschecked`",
+        'the plain **Yes**, not "don\'t ask again"',
+        "delete what it downloaded",
+        "choose **No**",
+        "`/exit`",
+        "paste the message from this page again",
+    ):
+        assert phrase in body, phrase
+    assert not re.search(r"\b(gh|npx)\b", text())
+    assert fenced_prompt(doc("install-options.md")) == prompt
+
+
+def test_s7_31_three_settings_only() -> None:
+    lines = [line for line in part("What you need in Claude Code").splitlines() if line.startswith("|")]
+    rows = [[cell.strip() for cell in line.strip("|").split("|")] for line in lines]
+    assert rows[2:] == [
+        ["**Claude Fable 5.2, medium (best)**", "`claude --model fable --effort medium`"],
+        ["Claude Opus 5.5, medium", "`claude --model opus --effort medium`"],
+        ["Claude Fable 5.2, low", "`claude --model fable --effort low`"],
+    ], rows
+    assert "Sonnet" not in text()
+    assert "https://code.claude.com/docs/en/setup" in part("What you need in Claude Code")
+
+
+REVIEW_STEPS = [
+    ("**Open a terminal in your project's folder.**", "Open in Terminal", "New Terminal at Folder"),
+    (
+        "**Check your instruction files.**",
+        "`CLAUDE.md`",
+        "`AGENTS.md`",
+        "`.cursorrules`",
+        "warning sign",
+        "AsChecked reports such text, but it cannot stop your tool from loading the file",
+    ),
+    ("**Choose the version.**", "`git checkout main`", "another branch"),
+    ("**Start Claude Code.**", "`claude --model fable --effort medium`", "`claude --model opus --effort medium`"),
+    (
+        "**Switch on plan mode.**",
+        "Shift+Tab",
+        "plan mode",
+        "Do not start the review in auto-accept or bypass-permissions mode",
+    ),
+    ("plan mode", "`/aschecked`"),
+    ("**Answer the three questions**", '"skip"', "not built yet", "separately"),
+    ("**Approve only reading.**", 'the plain **Yes**, not "don\'t ask again"', "only reads", "choose **No**"),
+    ("**Keep planning.**", "choose to keep planning", "approving would let it start changing your project"),
+    ("**Save the report.**", "outside your project's folder"),
+    ("**Fix what it found.**", '"Paste to your AI builder"', "without plan mode"),
+]
+
+
+def test_s7_31_review_steps() -> None:
+    steps = items(part("Run a review"))
+    assert len(steps) == len(REVIEW_STEPS), len(steps)
+    for number, (step, phrases) in enumerate(zip(steps, REVIEW_STEPS, strict=True), 1):
+        for phrase in phrases:
+            assert phrase in step, (number, phrase)
+
+
+CHAT_STEPS = [
+    ("**Download your project as a zip.**", "**Download ZIP**", "choose it first"),
+    ("[`paste/aschecked-prompt.md`](paste/aschecked-prompt.md)", "**Download raw file**"),
+    ("Claude Fable 5.2", "Claude Opus 5.5", "medium effort if offered"),
+    ("**Upload both files**", '"Run the AsChecked review in the attached prompt file on the attached project."'),
+    ("**Answer the three questions**", '"skip"', "not built yet", "separately"),
+    ("**Save the report**", '"Paste to your AI builder"'),
+]
+
+
+def test_s7_31_chat_steps() -> None:
+    chat = part("No Claude Code? Use a claude.ai chat")
+    assert "You need a claude.ai account." in chat
+    steps = items(chat)
+    assert len(steps) == len(CHAT_STEPS), len(steps)
+    for number, (step, phrases) in enumerate(zip(steps, CHAT_STEPS, strict=True), 1):
+        for phrase in phrases:
+            assert phrase in step, (number, phrase)
+    assert "a chat is not yet proven to reach the same results" in flat(chat)
