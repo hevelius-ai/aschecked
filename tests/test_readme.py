@@ -672,14 +672,24 @@ def test_s7_25_moved_sentences_kept() -> None:
 
 def test_s7_29_final_sandbox_round_is_stated() -> None:
     # S7-29 (owner, 22 Nov 2026): the final round's result is stated whatever it is, with the strict reading.
+    # Review round 1 on the page (HIGH 1, MEDIUM 2 to 4): one re-score of all versions, the strict count with every
+    # close call, the round-by-round figures, the limits, each tied to its own sentence or row.
     sandbox = flat(doc("how-we-tested.md")).split("## Sandbox test of the released version")[1]
     for phrase in (
-        "three rounds",
-        "Claude Code, released version (24)",
-        "23 of 24",
-        "21 of 24",
-        "two judgement calls",
-        "20 of 24",
-        "re-read the lines it cites",
+        "| Claude Code, released version (24) | 18 of 18, always as finding 1 | 2.8 | 24 of 24 | 6 of 6 | 3 of 3 |",
+        "| Claude Code, second version (24) | 18 of 18, 17 as finding 1 | 2.8 | 22 of 24 |",
+        "| Claude Code, first version with the plain-words rule (24) | 18 of 18, always as finding 1 | 2.8 "
+        "| 20 of 24 |",
+        "| Claude Code, earlier version (8) | 6 of 6 | 2.8 | 6 of 8 |",
+        "one scorer per app judged all 80 Claude Code reports together",
+        "The released version met every pass mark",
+        "Scored round by round, by new scorers each time, the three versions came to 20, 21 and 23 of 24",
+        "Counting every close call as a fail, the released version had 4 of 24",
+        "(the earlier version 0 of 8, the first 2 and the second 1 of 24)",
+        "no cited line opened again near the end",
+        "Codex and Cursor ran once per app, on the first version, and were scored only in the first round",
+        "so the last round is not a fresh test of them",
     ):
         assert phrase in sandbox, phrase
+    assert "every one of its 24 runs opened the cited lines again" not in sandbox
+    assert "checked from memory" not in sandbox
