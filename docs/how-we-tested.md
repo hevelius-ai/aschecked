@@ -113,10 +113,11 @@ each review our four test projects three times, on the same version of AsChecked
 one batch, so both are judged by the same standard. The new model becomes the recommendation only if all of these hold:
 
 - it finds at least 15 of the 19 known problems on average, and the most serious problem in at least 11 of 12 reports;
-- none of its reports breaks a report rule: no verdict that an app is safe, no list of strengths, the fixed closing
-  lines, at most 1,200 words, and a plain-words line before at least 9 in 10 of its steps;
-- it is clearly better (at least 2 more on average, and its weakest run beats the current best's strongest), or it
-  finds at least as many and costs at least $0.25 less per review;
+- none of its reports breaks a report rule (no verdict that an app is safe, no list of strengths, the fixed closing
+  lines, at most 1,200 words), and on average over its 12 reviews a plain-words line comes before at least 9 in 10
+  of its steps;
+- it is clearly better (at least 2 more on average, and its weakest run set beats the current best's strongest), or
+  it finds at least as many and costs at least $0.25 less per review;
 - it then passes the eight-app sandbox on its own: the most serious problem in at least 5 of the 6 apps with planted
   problems, no false alarm on the two correct apps, no file changed and no key shown in any run.
 
