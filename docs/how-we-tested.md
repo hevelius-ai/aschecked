@@ -145,11 +145,15 @@ shows that single scoring:
 The released version met every pass mark. Scored round by round, by new scorers each time, the three versions came to
 20, 21 and 23 of 24 on the report checks: the second round's scorers failed a citation one line off, while the third
 round's passed similar ones, and the third round's failed an effort given as "small to medium" that the single scoring
-passed. The scorers were also asked to list every close call: a key's length given as a bound rather than a number, a
-range that runs a line past what it shows, two efforts for two alternative fixes, the project's name spelled as in its
-package file, a loose verb about a cited line. Counting every close call as a fail, the released version had 4 of 24
-(the earlier version 0 of 8, the first 2 and the second 1 of 24), so that strict count says more about the wording
-than about any version. As in every round, a citation of the reviewed copy's own git settings file counts as present:
+passed. The scorers were also asked to list every close call. Most are about wording: a key's length given as a bound
+rather than a number, a range that runs a line past what it shows, two efforts for two alternative fixes, the
+project's name spelled as in its package file, a loose verb about a cited line. Some are more than wording: in the
+released version, a search result the scorer judged wrong, shapes in a cited drawing miscounted, a short note after the
+report's closing lines. The scorers were not shown the exact wording of the three closing lines and compared the
+reports with each other instead. Counting every close call on the report checks as a fail, including those a scorer
+wrote for all of an app's reports, no report of the three versions with the plain-words rule passes, and 1 of the
+earlier version's 8 does: almost every report has some close call, so that count cannot tell the versions apart. As in
+every round, a citation of the reviewed copy's own git settings file counts as present:
 each such report cites its remote address on the line where it is. (Three earlier-version runs broke at the end
 because we changed our run script while they ran, and were run again.)
 

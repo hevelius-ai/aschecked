@@ -684,8 +684,11 @@ def test_s7_29_final_sandbox_round_is_stated() -> None:
         "one scorer per app judged all 80 Claude Code reports together",
         "The released version met every pass mark",
         "Scored round by round, by new scorers each time, the three versions came to 20, 21 and 23 of 24",
-        "Counting every close call as a fail, the released version had 4 of 24",
-        "(the earlier version 0 of 8, the first 2 and the second 1 of 24)",
+        # Page review round 2 (HIGH 1): close calls a scorer wrote for all of an app's reports count too.
+        "Counting every close call on the report checks as a fail, including those a scorer wrote for all of an app's",
+        "no report of the three versions with the plain-words rule passes, and 1 of the earlier version's 8 does",
+        "a search result the scorer judged wrong",
+        "were not shown the exact wording of the three closing lines",
         "no cited line opened again near the end",
         "Codex and Cursor ran once per app, on the first version, and were scored only in the first round",
         "so the last round is not a fresh test of them",
