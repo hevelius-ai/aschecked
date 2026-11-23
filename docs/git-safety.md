@@ -2,7 +2,8 @@
 
 Back to the [README](../README.md).
 
-AsChecked reviews the branch you have open, and may look at your other branches for unmerged work.
+AsChecked reviews the branch you have open, and may look at your other branches for unmerged work. Save its
+report outside your project's folder, so that it does not show up as a change in your project.
 
 Read-only is an instruction the model is asked to follow, in Claude Code and every other tool. Plan mode in Claude
 Code is meant to keep it reading and planning instead of editing. Whether other tools' plan or read-only modes

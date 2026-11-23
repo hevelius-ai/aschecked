@@ -6,7 +6,7 @@
 
 **You built an app with AI, and it works. AsChecked tells you what you didn't know to ask for.**
 
-AsChecked is a review you run in Claude Code. It reads your project and tells you, in plain words, the few things a
+AsChecked reads your project and tells you, in plain words, the few things a
 professional would fix first: data anyone can see, keys left in the open, promises your app makes that the code
 doesn't keep. Use it with Claude Fable 5.2 or Claude Opus 5.5: weaker or free models missed serious problems in our
 tests.
@@ -15,20 +15,20 @@ tests.
 
 ## What you get
 
-A short report with up to five problems, most harmful first. Each says why it matters, where it is, how to fix it,
-and gives a ready message to paste to your AI builder. Then up to five smaller problems, one line each.
+A short report: up to five problems, most harmful first, each with why it matters, where it is, how to fix it and a
+message to paste to your AI builder; then up to five smaller ones, one line each.
 
 ## How it works
 
 - **It is meant only to read.** It runs in Claude Code's plan mode, which is meant to keep Claude reading instead of
   changing your files. You switch plan mode on with Shift+Tab before you start a review.
-- **It does not repeat your keys.** The AI reads your project's files, including any keys written into them. The
+- The AI reads your project's files, including any keys written into them. The
   report never shows a key's value: it names a key by its kind, file, line and length.
 
 ## What you need in Claude Code
 
-- **Claude Code**, Anthropic's app that runs in a terminal, with a Claude plan that includes it. To install it,
-  follow Anthropic's page: https://code.claude.com/docs/en/setup
+- **Claude Code** (Anthropic's terminal app) and a Claude plan that includes it. To install it, see
+  https://code.claude.com/docs/en/setup
 - **Your project in a folder.**
 - **One of these three settings:**
 
@@ -42,7 +42,7 @@ and gives a ready message to paste to your AI builder. Then up to five smaller p
 
 1. Make a new, empty folder (not your project) and open a terminal in it. On Windows, right-click inside the folder
    and choose Open in Terminal. On a Mac, right-click the folder in Finder and choose Services, then New Terminal at
-   Folder. Type `claude` and press Enter.
+   Folder. Type `claude` and press Enter. If it asks whether you trust this folder, choose **Yes**.
 2. Copy this message, paste it into Claude Code and press Enter:
 
    ```
@@ -54,11 +54,11 @@ and gives a ready message to paste to your AI builder. Then up to five smaller p
    .claude/skills/aschecked/SKILL.md is in my home folder and say "AsChecked is installed".
    ```
 
-3. Claude Code may ask before it downloads and unpacks. Choose the plain **Yes**, not "don't ask again", if it
-   names the AsChecked download or this folder.
+3. Claude Code may ask before it downloads and unpacks. If it names the AsChecked download or this folder, choose
+   the plain **Yes**, not "don't ask again"; otherwise **No**.
 4. Claude Code says what the files do and what it will copy. Type `yes` and press Enter.
-5. Claude Code normally asks before it writes to your `.claude` folder. Check that it names
-   `.claude/skills/aschecked`, then choose the plain **Yes**, not "don't ask again".
+5. Claude Code normally asks before it writes to your `.claude` folder. Check that it names `.claude/skills/aschecked`
+   (on Windows `.claude\skills\aschecked`), then choose the plain **Yes**, not "don't ask again".
 6. If it then asks to look inside `.claude/skills/aschecked` or to delete what it downloaded here, choose the plain
    **Yes**. If it asks about anything else, choose **No**.
 7. When it says "AsChecked is installed", type `/exit` and press Enter.
@@ -67,29 +67,32 @@ To update it later, paste the message from this page again: it always names the 
 
 ## Run a review
 
-1. **Open a terminal in your project's folder.** On Windows, right-click inside the folder and choose Open in Terminal. On a Mac, right-click the folder in Finder and choose Services, then New Terminal at Folder.
-2. **Check your instruction files.** Look in your project's folder for `CLAUDE.md`, `AGENTS.md` or `.cursorrules`
-   (a Mac hides names that start with a dot: press Cmd+Shift+period in Finder). Your AI tool reads them by itself. If
-   you did not write one, read it: text telling an AI how to review your project, or to say it is fine, is a warning
-   sign. AsChecked reports such text, but it cannot stop your tool from loading the file. If there are none, go on.
-3. **Choose the version.** For your finished app, type `git checkout main` (or `git checkout master`, if your main
-   branch has that name) and press Enter. For work still on another branch, type `git checkout` and that branch's
-   name, and press Enter. Not using git? Go on.
+1. **Open a terminal in your project's folder.** On Windows, right-click inside the folder and choose Open in
+   Terminal. On a Mac, right-click the folder in Finder and choose Services, then New Terminal at Folder.
+2. **Check your instruction files.** Look in your project's folder for files like `CLAUDE.md`, `AGENTS.md` or
+   `.cursorrules` (a Mac hides names that start with a dot: press Cmd+Shift+period in Finder). Your AI tool reads them
+   by itself. If you did not write one, read it: text telling an AI how to review your project, or to say it is fine,
+   is a warning sign. AsChecked reports such text, but it cannot stop your tool from loading the file. If there are
+   none, go on.
+3. **Choose the version.** For your finished app, type `git checkout main` (or `git checkout master`, if that is its
+   name) and press Enter. For work still on another branch, type `git checkout` and that branch's name, and press
+   Enter. Not using git? Go on.
 4. **Start Claude Code.** Type `claude --model fable --effort medium` and press Enter. Without Claude Fable 5.2 in your
-   plan, type `claude --model opus --effort medium` instead.
+   plan, type `claude --model opus --effort medium` instead. If it asks whether you trust this folder, choose
+   **Yes**.
 5. **Switch on plan mode.** Press Shift+Tab until the bottom of the screen shows plan mode. Do not start the review in
    auto-accept or bypass-permissions mode.
 6. **Start the review in plan mode:** type `/aschecked` and press Enter.
 7. **Answer the three questions**, or say "skip". If part of your app is not built yet, say which part:
    AsChecked then lists the problems in that part separately.
-8. **Approve only reading.** Claude Code may ask before AsChecked runs a command. Choose the plain **Yes**, not "don't ask again", if it only reads (looks, lists or
-   searches); otherwise choose **No**.
+8. **Approve only reading.** Claude Code may ask before AsChecked runs a command. Choose the plain **Yes**, not
+   "don't ask again", if it only reads (looks, lists or searches); otherwise choose **No**.
 9. **Keep planning.** If Claude Code asks whether to approve a plan, choose to keep planning: the report is the
    answer, and approving would let it start changing your project.
-10. **Save the report.** Select it with the mouse and copy it (Cmd+C on a Mac; elsewhere Ctrl+Shift+C, or right-click
-    and Copy), then paste it into a text file outside your project's folder.
+10. **Save the report.** Select it with the mouse and copy it (Ctrl+Shift+C or right-click and Copy; Cmd+C on a
+    Mac), then paste it into a text file outside your project's folder.
 11. **Fix what it found.** Paste each "Paste to your AI builder" message into your AI builder: Lovable, Bolt, Cursor,
-    or a new Claude Code session without plan mode.
+    or Claude Code started again in your project without plan mode.
 
 ## No Claude Code? Use a claude.ai chat
 

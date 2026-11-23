@@ -262,7 +262,7 @@ def test_s7_19_higher_effort_is_stated_as_not_better() -> None:
     assert "high, extra-high and max" in body
     assert "did not find more" in body
     assert "Fable 5.2 extra-high and max were not run" in body
-    # S7-25: the model paragraph moved to docs/how-we-tested.md; the README keeps "More effort did not find more".
+    # S7-25: the model paragraph moved to docs/how-we-tested.md (S7-31: the README's effort line moved there too).
     assert "took about seven times longer at most" in flat(doc("how-we-tested.md"))
     # S7-31 (test table): the effort line moved to docs/how-we-tested.md, limited to the two models it holds for.
     assert "**More effort did not find more** with Claude Fable 5.2 or Claude Opus 5.5" in flat(doc("how-we-tested.md"))
@@ -383,7 +383,7 @@ def test_which_version_it_reviews() -> None:
     for phrase in ("**Download ZIP**", "choose it first", "not built yet", "separately"):
         assert phrase in chat, phrase
     assert "may look at your other branches for unmerged work" in flat(doc("git-safety.md"))
-    # S7-25: the test result and the counting change moved to docs/how-we-tested.md, linked from this section.
+    # S7-25: the test result and the counting change moved to docs/how-we-tested.md, linked from the README.
     tested = flat(doc("how-we-tested.md")).split("## The work-in-progress test")[1].split(" ## ")[0]
     for phrase in ("In our test", "separate list", "after seeing the results"):
         assert phrase in tested, phrase
@@ -640,7 +640,7 @@ def test_s7_25_links_in_the_docs_pages_resolve() -> None:
         assert "../README.md" in local, f"{name} does not link back to the README"
         for target in local:
             assert (DOCS / target.split("#")[0]).resolve().exists(), f"{name}: {target}"
-    assert "## A zip of your project" in doc("install-options.md")  # the README's chat step links this anchor
+    assert "## A zip of your project" in doc("install-options.md")  # kept for links into it (S7-31: not the README)
 
 
 # S7-25 review round 1 (MEDIUM): the sandbox results, the missed pass mark and the stated limits are guarded.
@@ -734,9 +734,14 @@ def test_s7_31_readme_parts_in_order() -> None:
 
 def test_s7_31_no_cross_references() -> None:
     body = flat(text()).lower()
-    for phrase in ('see "', " above", " below", "section", "](#", "the same again", "the table"):
+    for phrase in ('see "', "section", "](#", "the same again", "the table"):
         assert phrase not in body, phrase
-    assert not re.search(r"\bstep \d+\b", body)
+    # S7-31 PR review round 1 (M2): the words on their own, steps by number or in words, and heading names quoted.
+    assert not re.search(r"\b(above|below|earlier|later on)\b", body)
+    numbers = r"(\d+|one|two|three|four|five|six|seven|eight|nine|ten|eleven)"
+    assert not re.search(rf"\bsteps? {numbers}\b", body)
+    for heading in S7_31_HEADINGS:
+        assert f'"{heading.lower()}"' not in body, heading
     for link in re.findall(r"\]\(([^)]+)\)", text()):
         assert link.startswith(("docs/", "paste/", "https://")) or link in ("LICENSE", "LICENSE-CODE"), link
 
@@ -757,6 +762,7 @@ INSTALL_PROMPT = (
     "delete what you downloaded and unpacked",
     "Change nothing else.",
     '"AsChecked is installed"',
+    ".claude/skills/aschecked/SKILL.md is in my home folder",  # S7-31 PR review round 1 (L4)
 )
 
 
@@ -780,8 +786,19 @@ def test_s7_31_install_is_a_pasted_prompt() -> None:
         "choose **No**",
         "`/exit`",
         "paste the message from this page again",
+        "it always names the newest version",  # S7-31 PR review round 1 (L4)
     ):
         assert phrase in body, phrase
+    # S7-31 PR review round 1 (M1): each approval step says the plain Yes itself, and step 5 the folder to check.
+    plain_yes = 'the plain **Yes**, not "don\'t ask again"'
+    assert plain_yes in steps[2] and "otherwise **No**" in steps[2], steps[2]
+    assert plain_yes in steps[4] and "Check that it names `.claude/skills/aschecked`" in steps[4], steps[4]
+    assert "the plain **Yes**" in steps[5] and "delete what it downloaded" in steps[5], steps[5]
+    assert "anything else, choose **No**" in steps[5], steps[5]
+    # S7-31 PR review round 1 (M5), from the owner's notes: Claude Code asks to trust the folder on first start,
+    # and Windows shows the path with backslashes.
+    assert "trust this folder, choose **Yes**" in steps[0], steps[0]
+    assert r"`.claude\skills\aschecked`" in steps[4], steps[4]
     assert not re.search(r"\b(gh|npx)\b", text())
     assert fenced_prompt(doc("install-options.md")) == prompt
 
@@ -831,6 +848,7 @@ def test_s7_31_review_steps() -> None:
     for number, (step, phrases) in enumerate(zip(steps, REVIEW_STEPS, strict=True), 1):
         for phrase in phrases:
             assert phrase in step, (number, phrase)
+    assert "trust this folder, choose **Yes**" in steps[3], steps[3]  # S7-31 PR review round 1 (M5)
 
 
 CHAT_STEPS = [
