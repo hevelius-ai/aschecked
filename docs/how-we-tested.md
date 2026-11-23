@@ -150,8 +150,8 @@ rather than a number, a range that runs a line past what it shows, two efforts f
 project's name spelled as in its package file, a loose verb about a cited line. Others are more than wording: in the
 released version, a search result the scorer judged wrong, shapes in a cited drawing miscounted, a short note after the
 report's closing lines, a key's length not given, behaviour overstated, the order of findings below the first. The
-scorers were not shown the exact wording of the three closing lines; three of the eight say they compared the reports
-with each other instead. Counting every close call on the report checks as a fail, including those a scorer
+scorers were not shown the exact wording of the three closing lines; those who say how they judged them compared the
+reports with each other instead. Counting every close call on the report checks as a fail, including those a scorer
 wrote for all of an app's reports, no report of the three versions with the plain-words rule passes, and 1 of the
 earlier version's 8 does: almost every report has some close call, so that count cannot tell the versions apart. As in
 every round, a citation of the reviewed copy's own git settings file counts as present:
