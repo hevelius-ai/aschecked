@@ -374,7 +374,7 @@ def test_gh_install_needs_no_prompt_and_claude_code_starts_after() -> None:
 # Added in S7 (owner's S7-4 and S7-8A, 17 Nov): both uses, a finished project and work in progress, with the
 # evaluation's result and the counting change disclosed.
 def test_which_version_it_reviews() -> None:
-    # S7-31 (test table): the section became review step 3 and the unfinished-work sentence in review step 7 and
+    # S7-31 (test table): the section became review step 2 and the unfinished-work sentence in review step 7 and
     # chat step 5 (R6.1); "may look at your other branches" moved to docs/git-safety.md. The docs half is unchanged.
     run = flat(part("Run a review"))
     for phrase in ("finished app", "`git checkout main`", "another branch", "not built yet", "separately"):
@@ -393,7 +393,7 @@ def test_which_version_it_reviews() -> None:
 
 # Added in review round 1 (finding 5): the run steps point to choosing the branch before the review starts.
 # Locked check changed under S7-31 (owner, 23 Nov 2026, "S7-31 all leans"; design DESIGN-S7-31.md, test table):
-# the steps no longer point to a section; choosing the version is review step 3 itself
+# the steps no longer point to a section; choosing the version is review step 2 itself
 # (test_s7_31_review_steps), and nothing in the README points to another part of it (test_s7_31_no_cross_references).
 def test_run_steps_point_to_choosing_the_branch() -> None:
     step = re.split(r"^\d+\. ", part("Run a review"), flags=re.M)[2]  # S7-31 walkthrough w5 (F1): step 2
