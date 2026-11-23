@@ -16,10 +16,11 @@ replacing any older copy, and delete what you downloaded and unpacked. Change no
 .claude/skills/aschecked/SKILL.md is in my home folder and say "AsChecked is installed".
 ```
 
-We tried this on Windows 11. The README's Mac steps (opening a terminal at a folder, showing hidden files, copying
-from the terminal) are not tried yet.
+We tried this once on Windows 11, before the release, with the branch's download address. The README's Mac
+steps (opening a terminal at a folder, showing hidden files, copying from the terminal) and Linux are not tried
+yet.
 
-**1. Or install it another way** (one of these):
+**Or install it another way** (one of these):
 
 - **By hand:** on the AsChecked GitHub page (https://github.com/hevelius-ai/aschecked), click **Code**, then
   **Download ZIP**, and unzip it. Copy its `skills/aschecked`
