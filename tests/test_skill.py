@@ -584,6 +584,15 @@ def test_s7_44_length_command_prints_only_the_length() -> None:
         assert DUMMY not in result
 
 
+def test_s7_44_quoted_value_length_command() -> None:
+    # A value inside a longer line: the quote-split form counts the quoted text the skill names by field number.
+    limits = section("Hard limits")
+    assert "`awk -F'\"' 'NR==<line> {print length($2)}' <file>`" in limits
+    assert "(`$4` the second, `$6` the third)" in limits
+    line = f'const supabase = createClient("https://x.example", "{DUMMY}");'
+    assert len(line.split('"')[3]) == len(DUMMY)  # awk -F'"' field $4 is Python's split index 3
+
+
 def test_s7_44_one_effort_per_finding() -> None:
     assert "Fix: plain words. Effort: one word: small, medium or large." in report_template()
     report = flat(section("Report"))
