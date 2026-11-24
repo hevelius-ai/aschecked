@@ -4,7 +4,11 @@ Behaviour is proven by the smoke runs and the re-test, not here: these checks on
 """
 
 import re
+import shutil
+import subprocess
 from pathlib import Path
+
+import pytest
 
 ROOT = Path(__file__).resolve().parent.parent
 SKILL_DIR = ROOT / "skills" / "aschecked"
@@ -546,55 +550,87 @@ def test_s7_29_numbered_masked_read_hides_values() -> None:
 
 # S7-44 2A (owner, 24 Nov 2026): the S7-42 re-score found reports giving a key's length as a bound, a range, the
 # whole line's length or not at all (public-by-design keys included), and a fix's effort as a range or two sizes.
-# Written before the skill change and seen failing.
-def length_command() -> str:
-    match = re.search(r"`(awk 'NR==<line> \{.*?\}' <file>)`", section("Hard limits"))
-    assert match, "no one-command length example in the form `awk 'NR==<line> {...}' <file>`"
-    return match.group(1)
+# First form written before the skill change and seen failing; reworked after PR review round 1 (finding 1, HIGH:
+# the first command miscounted common line forms; findings 3 to 5: PowerShell quoting, tests that did not run awk;
+# then a Windows proof: escapes in the separator broke when awk was started outside Git Bash).
+LENGTH_COMMAND = "awk -F'[^A-Za-z0-9_.+/~-]+' 'NR==<line> {for (i=1; i<=NF; i++) print i, length($i)}' <file>"
+LONG_DUMMY = "Zq8xYv3Lm2Np7Rt4Wk9Bc6Hd1Fg5Js0a"  # 32 characters, longer than any name below
+LENGTH_LINES = [
+    "OPENAI_API_KEY={v}",
+    'const apiKey = "{v}";',
+    '"STRIPE_SECRET_KEY": "{v}",',
+    "supabaseKey: '{v}'",
+    "const SERVICE_TOKEN = `{v}`;",
+    'const apiKey: string = "{v}";',
+    'apiKey := "{v}"',
+    "'key' => '{v}',",
+    "API_KEY={v} # live key",
+    '{{ apiKey: "{v}" }}',
+    'client = OpenAI(api_key="{v}")',
+    '#define API_KEY "{v}"',
+    "Authorization: Bearer {v}",
+    'os.environ.get("OPENAI_API_KEY", "{v}")',
+    "createClient('https://x.example', '{v}')",
+    'app.secret_key = "{v}"',
+    'export DB_PASSWORD="{v}"',
+]
 
 
-def apply_length_command(command: str, line: str) -> str:
-    # The awk example applied as written: its sub() and gsub() patterns, POSIX classes and octal escapes translated.
-    subs = re.findall(r"(g?sub)\(/(.+?)/, \"\"\)", command)
-    assert [name for name, _ in subs] == ["sub", "gsub"], subs
-    for name, pattern in subs:
-        pattern = pattern.replace("[:space:]", r"\s")
-        pattern = re.sub(r"\\([0-7]{3})", lambda m: re.escape(chr(int(m.group(1), 8))), pattern)
-        line = re.sub(pattern, "", line, count=1 if name == "sub" else 0)
-    assert "print length($0)" in command
-    return str(len(line))
+def piece_lengths(line: str) -> list[int]:
+    # The command's field separator applied in Python (the same bracket expression; no escapes in it).
+    separator = re.search(r"-F'(\[.+?\]\+)'", LENGTH_COMMAND)
+    assert separator
+    return [len(piece) for piece in re.split(separator.group(1), line)]
 
 
 def test_s7_44_exact_key_length_rule() -> None:
     limits = flat(section("Hard limits"))
+    assert f"`{LENGTH_COMMAND}`" in limits
     for phrase in (
         "its exact length in characters, public-by-design keys too",
-        "which prints only a number",
+        "prints the position and length of each piece of the line, never its text",
+        "The value is the longest piece after the key's name; report that number",
+        "say the length is not certain and why",
         "never a range, a bound or the length of the whole line",
     ):
         assert phrase in limits, phrase
+    # PR review round 1 (finding 3) and the S7-44 Windows proof: a double quote breaks it in Windows PowerShell 5.1,
+    # and a backslash escape is read as plain characters when awk is started by a Windows program.
+    assert '"' not in LENGTH_COMMAND and "\\" not in LENGTH_COMMAND, LENGTH_COMMAND
     assert "named by kind, file, line and exact length, never its value" in flat(section("Report"))
 
 
-def test_s7_44_length_command_prints_only_the_length() -> None:
-    command = length_command()
-    for line in KEY_LINES:
-        result = apply_length_command(command, line)
-        assert result == str(len(DUMMY)), f"{line!r} -> {result!r}"
-        assert DUMMY not in result
+def test_s7_44_longest_piece_is_the_value() -> None:
+    for form in LENGTH_LINES:
+        line = form.format(v=LONG_DUMMY)
+        assert max(piece_lengths(line)) == len(LONG_DUMMY), (line, piece_lengths(line))
 
 
-def test_s7_44_quoted_value_length_command() -> None:
-    # A value inside a longer line: the quote-split form counts the quoted text the skill names by field number.
-    limits = section("Hard limits")
-    assert "`awk -F'\"' 'NR==<line> {print length($2)}' <file>`" in limits
-    assert "(`$4` the second, `$6` the third)" in limits
-    line = f'const supabase = createClient("https://x.example", "{DUMMY}");'
-    assert len(line.split('"')[3]) == len(DUMMY)  # awk -F'"' field $4 is Python's split index 3
+def test_s7_44_length_command_runs_and_prints_only_numbers(tmp_path: Path) -> None:
+    awk = shutil.which("awk")
+    if awk is None:
+        pytest.skip("no awk on this system")
+    lines = [form.format(v=LONG_DUMMY) for form in LENGTH_LINES]
+    path = tmp_path / "keys.txt"
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    separator, program = re.fullmatch(r"awk -F'(.+?)' '(.+?)' <file>", LENGTH_COMMAND).groups()
+    for number, line in enumerate(lines, 1):
+        run = subprocess.run(
+            [awk, "-F", separator, program.replace("<line>", str(number)), str(path)],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        output = run.stdout.splitlines()
+        assert output and all(re.fullmatch(r"\d+ \d+", row) for row in output), (line, run.stdout)
+        assert LONG_DUMMY[:8] not in run.stdout
+        assert max(int(row.split()[1]) for row in output) == len(LONG_DUMMY), (line, run.stdout)
+        assert [int(row.split()[1]) for row in output] == piece_lengths(line)[: len(output)], (line, run.stdout)
 
 
 def test_s7_44_one_effort_per_finding() -> None:
     assert "Fix: plain words. Effort: one word: small, medium or large." in report_template()
     report = flat(section("Report"))
     assert "Each finding has one effort" in report
+    assert "when its fix has two parts or offers a choice, give the effort of the fix you recommend" in report
     assert "never a range or two sizes" in report
