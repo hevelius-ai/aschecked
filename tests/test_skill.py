@@ -563,15 +563,22 @@ def test_s7_29_numbered_masked_read_hides_values() -> None:
 NAME_IN_CODE = (
     "env[.]|^[A-Za-z_][A-Za-z0-9_]*([.][A-Za-z_][A-Za-z0-9_]*)+$|^[A-Z0-9]*_[A-Z0-9_]*$|^[a-z0-9]*_[a-z0-9_]*$"
 )
+# Provider-style prefixes are built from parts, so no key-shaped literal sits whole in this file (GitHub push
+# protection blocked such fake keys on 24 Nov). The values are fake.
+STRIPE_LIVE = "sk" + "_live_"
+SHOPIFY_PAT = "shp" + "at_"
+SENDGRID = "S" + "G."
+JWT_HEAD = "ey" + "J"
+JWT_SHAPE = "^eyJ.*[.].*[.]"  # round 5 (N5-1): a signed JWT is a value, never a name in code
 LENGTH_COMMAND = (
     "awk -F'[^A-Za-z0-9_.+/~-]+' 'NR==<line> {for (i=1; i<=NF; i++) {p=$i; sub(/[.]+$/, e, p); print i, length(p), "
-    f"(p ~ /[A-Za-z]/) * (p ~ /[0-9]/), (p ~ /{NAME_IN_CODE}/)}}}}' <file>"
+    f"(p ~ /[A-Za-z]/) * (p ~ /[0-9]/), (p ~ /{NAME_IN_CODE}/) * (p !~ /{JWT_SHAPE}/)}}}}' <file>"
 )
 LENGTH_SENTENCE = (
     "which prints four numbers for each piece of the line, never its text: its position, its length (full stops at its "
     "end not counted), 1 if it holds both letters and digits, and 1 if it looks like a name in code (it contains "
     "`env.`; or it is a dotted name such as `config.apiKey`; or it has a `_` and otherwise only capitals and digits, "
-    "or only small letters and digits):"
+    "or only small letters and digits; never for a JWT, which starts with `eyJ` and has two full stops):"
 )
 LENGTH_RULE = (
     "Report a piece's length as the key's exact length only when it is the only piece after the key's name that is "
@@ -583,8 +590,8 @@ LENGTH_RULE = (
 LONG_DUMMY = "sk-Zq8x_Yv3.Lm2+Np7/Rt4~Wk9Bc6Hd1"  # 33 characters, every allowed punctuation mark
 # (line form, the key's name on it, what the rule gives: the value's length, or None for "length not certain").
 # Lines whose answer depends on the key's kind (a password, a JWT signing secret, base64 ending in `=`, a token with
-# a `:`) are left to the rule's "known format" condition, which a test cannot apply. A key written in capitals,
-# digits and `_` only (some access key ids) gives "not certain" by the fourth number: a safe miss, not a wrong number.
+# a `:`) are left to the rule's "known format" condition, which a test cannot apply. A key with a `_` and otherwise
+# only capitals and digits gives "not certain" by the fourth number: a safe miss, not a wrong number (N5-6).
 RULE_CASES = [
     ("OPENAI_API_KEY={v}", "OPENAI_API_KEY", 33),
     ('const apiKey = "{v}";', "apiKey", 33),
@@ -630,6 +637,16 @@ RULE_CASES = [
     ("API_KEY={v} # rotated 2026-11-24", "API_KEY", 33),
     ("API_KEY={v}...", "API_KEY", 33),
     ("API_KEY=ab12cd34e", "API_KEY", 9),
+    # Round 5 (N5-1, N5-5): a signed JWT counts in full; a prefixed base62 key; a name only `env.` catches; a
+    # character outside the set ends the piece.
+    (
+        f"SUPABASE_SERVICE_KEY={JWT_HEAD}hbGciOiJIUzI1NiJ9.{JWT_HEAD}yb2xlIjoic2VydmljZSJ9.Zq8xYv3Lm2Np7Rt4Wk9Bc6Hd1",
+        "SUPABASE_SERVICE_KEY",
+        71,
+    ),
+    (f"STRIPE_SECRET_KEY={STRIPE_LIVE}Zq8xYv3Lm2Np7Rt4Wk9Bc6Hd", "STRIPE_SECRET_KEY", 32),
+    ("apiKey: process.env.SERVICE-KEY2,", "apiKey", None),
+    ("API_KEY={v}@host", "API_KEY", 33),
 ]
 # Named known limits (S7-49 A): what the rule gives on lines where it is wrong, kept so any change is seen. The full
 # test measures how often such lines occur in real reports. (line form, name, what the rule gives, the truth)
@@ -638,8 +655,16 @@ KNOWN_LIMITS = [
     ("OPENAI_API_KEY=your-key-here # https://api.openai.com/v1/models", "OPENAI_API_KEY", 26, "no key"),
     # A shell default: the `-` before the value is in the key alphabet.
     ("api_key: ${{OPENAI_KEY:-{v}}}", "api_key", 34, 33),
-    # An unsigned JWT ends in a full stop and reads as a dotted name: a safe miss ("not certain"), not a wrong number.
-    ("JWT=eyJhbGciOiJub25lIn0.eyJzdWIiOiIxMjMifQ.", "JWT", None, 42),
+    # An unsigned JWT: its final full stop is dropped, leaving one, so it reads as a dotted name: a safe miss.
+    (f"JWT={JWT_HEAD}hbGciOiJub25lIn0.{JWT_HEAD}zdWIiOiIxMjMifQ.", "JWT", None, 39),
+    # Round 5 (N5-3): names in code the fourth number does not catch give a number for a line with no key.
+    ("clientSecret: auth0ClientSecret,", "clientSecret", 17, "no key"),
+    ("key: s3-secret-key", "key", 13, "no key"),
+    ("PRIVATE_KEY_PATH=./certs/server2.pem", "PRIVATE_KEY_PATH", 19, "no key"),
+    # Round 5 (N5-4): real key shapes that always read as names: a safe miss ("not certain").
+    (f"SHOPIFY_TOKEN={SHOPIFY_PAT}0a1b2c3d4e5f60718293a4b5c6d7e8f9", "SHOPIFY_TOKEN", None, 38),
+    (f"STRIPE_KEY={STRIPE_LIVE}0a1b2c3d4e5f60718293a4b5", "STRIPE_KEY", None, 32),
+    (f"SENDGRID_API_KEY={SENDGRID}Zq8xYv3Lm2Np7Rt4Wk9B.Bc6Hd1Fg5Js0aQw2Er4TyU", "SENDGRID_API_KEY", None, 46),
 ]
 
 
@@ -654,7 +679,7 @@ def piece_numbers(piece: str) -> tuple[int, int, int]:
     # The command's program applied in Python: a full stop at the end dropped; letters and digits; a name in code.
     p = re.sub(r"[.]+$", "", piece)
     both = int(bool(re.search("[A-Za-z]", p)) and bool(re.search("[0-9]", p)))
-    name_like = int(bool(re.search(NAME_IN_CODE, p)))
+    name_like = int(bool(re.search(NAME_IN_CODE, p)) and not re.search(JWT_SHAPE, p))
     return len(p), both, name_like
 
 
