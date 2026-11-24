@@ -552,45 +552,47 @@ def test_s7_29_numbered_masked_read_hides_values() -> None:
 # whole line's length or not at all (public-by-design keys included), and a fix's effort as a range or two sizes.
 # First form written before the skill change and seen failing; reworked after PR review round 1 (finding 1, HIGH:
 # the first command miscounted common line forms; findings 3 to 5: PowerShell quoting, tests that did not run awk;
-# then a Windows proof: escapes in the separator broke when awk was started outside Git Bash) and round 2 (N1: the
-# longest piece is not always the value; N2: the rule's condition and the character set were not pinned).
+# then a Windows proof: escapes in the separator broke when awk was started outside Git Bash), round 2 (N1, N2: the
+# longest piece is not always the value; the rule and the character set were not pinned) and round 3 (R3-1: the awk
+# test compared part of its output; R3-2: lines with no key at all, such as an environment variable's name, gave an
+# "exact" number). S7-46 2A (owner): exact where it can be counted for certain, otherwise "length not certain".
 LENGTH_COMMAND = "awk -F'[^A-Za-z0-9_.+/~-]+' 'NR==<line> {for (i=1; i<=NF; i++) print i, length($i)}' <file>"
 LENGTH_RULE = (
-    "Report that piece's number as the exact length only when it is the only piece longer than 8 characters after "
-    "the key's name and the kind of key has a known format of letters, digits and `_ . + / ~ -` (for example an `sk-` "
-    'key, a JWT, a hex or base62 token); otherwise write "length not certain" and why (another long piece on the '
-    "line, or a password, URL, connection string or base64 secret); never a range, a bound or the length of the "
-    "whole line."
+    "Report a piece's length as the key's exact length only when it is the only piece after the key's name that is "
+    "longer than 8 characters and holds both letters and digits, and the kind of key has a known format of letters, "
+    'digits and `_ . + / ~ -` (for example an `sk-` key, a JWT, a hex or base62 token); otherwise write "length not '
+    'certain" and why (another such piece on the line, no such piece, or a password, URL, connection string, JWT '
+    "signing secret or base64 secret); never a range, a bound or the length of the whole line."
 )
-LONG_DUMMY = "sk-Zq8x_Yv3.Lm2+Np7/Rt4~Wk9Bc6Hd1"  # 32 characters, every allowed punctuation mark, longer than any name
-# (line form, the key's name on it): one piece longer than 8 after the name, and it is the value.
-EXACT_LINES = [
-    ("OPENAI_API_KEY={v}", "OPENAI_API_KEY"),
-    ('const apiKey = "{v}";', "apiKey"),
-    ('"STRIPE_SECRET_KEY": "{v}",', "STRIPE_SECRET_KEY"),
-    ("supabaseKey: '{v}'", "supabaseKey"),
-    ("const SERVICE_TOKEN = `{v}`;", "SERVICE_TOKEN"),
-    ('const apiKey: string = "{v}";', "apiKey"),
-    ('apiKey := "{v}"', "apiKey"),
-    ("'key' => '{v}',", "key"),
-    ("API_KEY={v} # live key", "API_KEY"),
-    ('{{ apiKey: "{v}" }}', "apiKey"),
-    ('client = OpenAI(api_key="{v}")', "api_key"),
-    ('#define API_KEY "{v}"', "API_KEY"),
-    ("Authorization: Bearer {v}", "Authorization"),
-    ('os.environ.get("OPENAI_API_KEY", "{v}")', "OPENAI_API_KEY"),
-    ('app.secret_key = "{v}"', "app.secret_key"),
-    ('export DB_PASSWORD="{v}"', "DB_PASSWORD"),
-]
-# Round 2 (N1): lines where the longest piece after the name need not be the value; the rule must say "not certain".
-NOT_CERTAIN_LINES = [
-    ('const JWT_SECRET = process.env.JWT_SECRET || "{v}";', "JWT_SECRET"),
-    ('password = os.getenv("DB_PASSWORD", "{v}")', "password"),
-    ("API_KEY={v} # from https://dashboard.example.com/apikeys", "API_KEY"),
-    ('curl -H "Authorization: Bearer {v}" https://api.example.com/stream', "Authorization"),
-    ('{{"pk": "{v}", "sk": "{v}"}}', "pk"),
-    ("createClient('https://x.example', '{v}')", "createClient"),
-    ("TELEGRAM_BOT_TOKEN=1234567890:{v}", "TELEGRAM_BOT_TOKEN"),
+LONG_DUMMY = "sk-Zq8x_Yv3.Lm2+Np7/Rt4~Wk9Bc6Hd1"  # 33 characters, every allowed punctuation mark
+# (line form, the key's name on it, what the rule gives: the value's length, or None for "length not certain").
+# Lines whose answer depends on the key's kind (a password, a JWT signing secret, base64 ending in `=`, a token with
+# a `:`) are left to the rule's "known format" condition, which a test cannot apply.
+RULE_CASES = [
+    ("OPENAI_API_KEY={v}", "OPENAI_API_KEY", 33),
+    ('const apiKey = "{v}";', "apiKey", 33),
+    ('"STRIPE_SECRET_KEY": "{v}",', "STRIPE_SECRET_KEY", 33),
+    ("supabaseKey: '{v}'", "supabaseKey", 33),
+    ("const SERVICE_TOKEN = `{v}`;", "SERVICE_TOKEN", 33),
+    ('const apiKey: string = "{v}";', "apiKey", 33),
+    ('apiKey := "{v}"', "apiKey", 33),
+    ("'key' => '{v}',", "key", 33),
+    ("API_KEY={v} # live key", "API_KEY", 33),
+    ('{{ apiKey: "{v}" }}', "apiKey", 33),
+    ('client = OpenAI(api_key="{v}")', "api_key", 33),
+    ('#define API_KEY "{v}"', "API_KEY", 33),
+    ("Authorization: Bearer {v}", "Authorization", 33),
+    ('os.environ.get("OPENAI_API_KEY", "{v}")', "OPENAI_API_KEY", 33),
+    ('app.secret_key = "{v}"', "app.secret_key", 33),
+    ("createClient('https://x.example', '{v}')", "createClient", 33),
+    ('const JWT_SECRET = process.env.JWT_SECRET || "{v}";', "JWT_SECRET", 33),
+    ("API_KEY={v} # from https://dashboard.example.com/apikeys", "API_KEY", 33),
+    ('curl -H "Authorization: Bearer {v}" https://api.example.com/stream', "Authorization", 33),
+    ('{{"pk": "{v}", "sk": "{v}"}}', "pk", None),
+    ("apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,", "apiKey", None),
+    ("const apiKey = import.meta.env.VITE_OPENAI_API_KEY;", "apiKey", None),
+    ("Authorization: `Bearer ${{process.env.OPENAI_API_KEY}}`", "Authorization", None),
+    ("API_KEY=ab12cd34 # placeholder", "API_KEY", None),
 ]
 
 
@@ -601,9 +603,18 @@ def pieces(line: str) -> list[str]:
     return re.split(separator.group(1), line)
 
 
-def long_pieces_after_name(line: str, name: str) -> list[int]:
+def rule_gives(line: str, name: str) -> int | None:
+    # The rule's mechanical part, read from its own words: the pieces after the name longer than the threshold that
+    # hold both letters and digits; exactly one gives its length, otherwise "not certain" (None).
+    threshold = int(re.search(r"longer than (\d+) characters and holds both letters and digits", LENGTH_RULE).group(1))
     parts = pieces(line)
-    return [len(part) for part in parts[parts.index(name) + 1 :] if len(part) > 8]
+    after = parts[parts.index(name) + 1 :]
+    found = [
+        len(part)
+        for part in after
+        if len(part) > threshold and re.search("[A-Za-z]", part) and re.search("[0-9]", part)
+    ]
+    return found[0] if len(found) == 1 else None
 
 
 def test_s7_44_exact_key_length_rule() -> None:
@@ -623,19 +634,17 @@ def test_s7_44_exact_key_length_rule() -> None:
 
 
 def test_s7_44_the_rule_gives_the_value_or_not_certain() -> None:
-    for form, name in EXACT_LINES:
+    assert len(LONG_DUMMY) == 33
+    for form, name, expected in RULE_CASES:
         line = form.format(v=LONG_DUMMY)
-        assert long_pieces_after_name(line, name) == [len(LONG_DUMMY)], (line, pieces(line))
-    for form, name in NOT_CERTAIN_LINES:
-        line = form.format(v=LONG_DUMMY)
-        assert len(long_pieces_after_name(line, name)) >= 2, (line, pieces(line))
+        assert rule_gives(line, name) == expected, (line, pieces(line))
 
 
 def test_s7_44_length_command_runs_and_prints_only_numbers(tmp_path: Path) -> None:
     awk = shutil.which("awk")
     if awk is None:
         pytest.skip("no awk on this system")
-    lines = [form.format(v=LONG_DUMMY) for form, _ in EXACT_LINES + NOT_CERTAIN_LINES]
+    lines = [form.format(v=LONG_DUMMY) for form, _, _ in RULE_CASES]
     path = tmp_path / "keys.txt"
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
     separator, program = re.fullmatch(r"awk -F'(.+?)' '(.+?)' <file>", LENGTH_COMMAND).groups()
@@ -649,10 +658,7 @@ def test_s7_44_length_command_runs_and_prints_only_numbers(tmp_path: Path) -> No
         output = run.stdout.splitlines()
         assert output and all(re.fullmatch(r"\d+ \d+", row) for row in output), (line, run.stdout)
         assert LONG_DUMMY[3:11] not in run.stdout
-        assert [int(row.split()[1]) for row in output] == [len(part) for part in pieces(line)][: len(output)], (
-            line,
-            run.stdout,
-        )
+        assert output == [f"{i} {len(part)}" for i, part in enumerate(pieces(line), 1)], (line, run.stdout)
 
 
 def test_s7_44_one_effort_per_finding() -> None:

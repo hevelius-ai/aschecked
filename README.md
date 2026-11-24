@@ -23,7 +23,7 @@ message to paste to your AI builder; then up to five smaller ones, one line each
 - **It is meant only to read.** It runs in Claude Code's plan mode, which is meant to keep Claude reading instead of
   changing your files. You switch plan mode on with Shift+Tab before you start a review.
 - The AI reads your project's files, including any keys written into them. The
-  report never shows a key's value: it names a key by its kind, file, line and length.
+  report never shows a key's value: it gives a key's kind, file, line and, if certain, length.
 
 ## What you need in Claude Code
 
