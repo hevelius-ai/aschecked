@@ -553,21 +553,27 @@ def test_s7_29_numbered_masked_read_hides_values() -> None:
 # First form written before the skill change and seen failing; reworked after PR review round 1 (finding 1, HIGH:
 # the first command miscounted common line forms; findings 3 to 5: PowerShell quoting, tests that did not run awk;
 # then a Windows proof: escapes in the separator broke when awk was started outside Git Bash), round 2 (N1, N2: the
-# longest piece is not always the value; the rule and the character set were not pinned) and round 3 (R3-1: the awk
-# test compared part of its output; R3-2: lines with no key at all, such as an environment variable's name, gave an
-# "exact" number). S7-46 2A (owner): exact where it can be counted for certain, otherwise "length not certain".
-LENGTH_COMMAND = "awk -F'[^A-Za-z0-9_.+/~-]+' 'NR==<line> {for (i=1; i<=NF; i++) print i, length($i)}' <file>"
+# longest piece is not always the value; the rule and the character set were not pinned), round 3 (R3-1, R3-2: the
+# awk test compared part of its output; lines with no key gave an "exact" number) and the re-check (H1: the model
+# could not see whether a piece holds digits, so the command now prints it; S7-48: a variable's name holding a digit
+# and a full stop after the value are handled, not left as known limits). S7-46 2A (owner): exact where it can be
+# counted for certain, otherwise "length not certain".
+LENGTH_COMMAND = (
+    "awk -F'[^A-Za-z0-9_.+/~-]+' 'NR==<line> {for (i=1; i<=NF; i++) {p=$i; sub(/[.]+$/, e, p); print i, length(p), "
+    "(p ~ /[A-Za-z]/) * (p ~ /[0-9]/), (p ~ /env[.]|^[A-Z0-9_]+$/)}}' <file>"
+)
 LENGTH_RULE = (
     "Report a piece's length as the key's exact length only when it is the only piece after the key's name that is "
-    "longer than 8 characters and holds both letters and digits, and the kind of key has a known format of letters, "
-    'digits and `_ . + / ~ -` (for example an `sk-` key, a JWT, a hex or base62 token); otherwise write "length not '
-    'certain" and why (another such piece on the line, no such piece, or a password, URL, connection string, JWT '
-    "signing secret or base64 secret); never a range, a bound or the length of the whole line."
+    "longer than 8 characters with third number 1 and fourth number 0, and the kind of key has a known format of "
+    "letters, digits and `_ . + / ~ -` (for example an `sk-` key, a JWT, a hex or base62 token); otherwise write "
+    '"length not certain" and why (another such piece on the line, no such piece, or a password, URL, connection '
+    "string, JWT signing secret or base64 secret); never a range, a bound or the length of the whole line."
 )
 LONG_DUMMY = "sk-Zq8x_Yv3.Lm2+Np7/Rt4~Wk9Bc6Hd1"  # 33 characters, every allowed punctuation mark
 # (line form, the key's name on it, what the rule gives: the value's length, or None for "length not certain").
 # Lines whose answer depends on the key's kind (a password, a JWT signing secret, base64 ending in `=`, a token with
-# a `:`) are left to the rule's "known format" condition, which a test cannot apply.
+# a `:`) are left to the rule's "known format" condition, which a test cannot apply. A key written in capitals,
+# digits and `_` only (some access key ids) gives "not certain" by the fourth number: a safe miss, not a wrong number.
 RULE_CASES = [
     ("OPENAI_API_KEY={v}", "OPENAI_API_KEY", 33),
     ('const apiKey = "{v}";', "apiKey", 33),
@@ -588,11 +594,16 @@ RULE_CASES = [
     ('const JWT_SECRET = process.env.JWT_SECRET || "{v}";', "JWT_SECRET", 33),
     ("API_KEY={v} # from https://dashboard.example.com/apikeys", "API_KEY", 33),
     ('curl -H "Authorization: Bearer {v}" https://api.example.com/stream', "Authorization", 33),
+    ("The key is OPENAI_API_KEY={v}.", "OPENAI_API_KEY", 33),
+    ('const secret = process.env.AUTH0_CLIENT_SECRET || "{v}";', "secret", 33),
     ('{{"pk": "{v}", "sk": "{v}"}}', "pk", None),
     ("apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,", "apiKey", None),
     ("const apiKey = import.meta.env.VITE_OPENAI_API_KEY;", "apiKey", None),
     ("Authorization: `Bearer ${{process.env.OPENAI_API_KEY}}`", "Authorization", None),
     ("API_KEY=ab12cd34 # placeholder", "API_KEY", None),
+    ("clientSecret: process.env.AUTH0_CLIENT_SECRET,", "clientSecret", None),
+    ("secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,", "secretAccessKey", None),
+    ("const token = S3_UPLOAD_TOKEN_2026;", "token", None),
 ]
 
 
@@ -603,17 +614,21 @@ def pieces(line: str) -> list[str]:
     return re.split(separator.group(1), line)
 
 
+def piece_numbers(piece: str) -> tuple[int, int, int]:
+    # The command's program applied in Python: a full stop at the end dropped; letters and digits; a name in code.
+    p = re.sub(r"[.]+$", "", piece)
+    both = int(bool(re.search("[A-Za-z]", p)) and bool(re.search("[0-9]", p)))
+    name_like = int(bool(re.search(r"env[.]|^[A-Z0-9_]+$", p)))
+    return len(p), both, name_like
+
+
 def rule_gives(line: str, name: str) -> int | None:
-    # The rule's mechanical part, read from its own words: the pieces after the name longer than the threshold that
-    # hold both letters and digits; exactly one gives its length, otherwise "not certain" (None).
-    threshold = int(re.search(r"longer than (\d+) characters and holds both letters and digits", LENGTH_RULE).group(1))
+    # The rule's mechanical part, read from its own words: after the name, the pieces longer than the threshold with
+    # third number 1 and fourth number 0; exactly one gives its length, otherwise "not certain" (None).
+    threshold = int(re.search(r"longer than (\d+) characters with third number 1 and fourth number 0", LENGTH_RULE)[1])
     parts = pieces(line)
     after = parts[parts.index(name) + 1 :]
-    found = [
-        len(part)
-        for part in after
-        if len(part) > threshold and re.search("[A-Za-z]", part) and re.search("[0-9]", part)
-    ]
+    found = [n[0] for n in map(piece_numbers, after) if n[0] > threshold and n[1] == 1 and n[2] == 0]
     return found[0] if len(found) == 1 else None
 
 
@@ -623,12 +638,15 @@ def test_s7_44_exact_key_length_rule() -> None:
     assert LENGTH_RULE in limits
     for phrase in (
         "its exact length in characters, public-by-design keys too",
-        "prints the position and length of each piece of the line, never its text",
+        "prints four numbers for each piece of the line, never its text",
+        "1 if it holds both letters and digits, and 1 if it looks like a name in code",
     ):
         assert phrase in limits, phrase
     # PR review round 1 (finding 3) and the S7-44 Windows proof: a double quote breaks it in Windows PowerShell 5.1,
-    # and a backslash escape is read as plain characters when awk is started by a Windows program.
-    assert '"' not in LENGTH_COMMAND and "\\" not in LENGTH_COMMAND, LENGTH_COMMAND
+    # and a backslash escape is read as plain characters when awk is started by a Windows program. A `>` would make
+    # awk's print write a file.
+    command = LENGTH_COMMAND.replace("<line>", "1").replace("<file>", "f")
+    assert '"' not in command and "\\" not in command and ">" not in command, LENGTH_COMMAND
     report = flat(section("Report"))
     assert 'named by kind, file, line and exact length (or "length not certain" where the hard limits say so)' in report
 
@@ -637,7 +655,7 @@ def test_s7_44_the_rule_gives_the_value_or_not_certain() -> None:
     assert len(LONG_DUMMY) == 33
     for form, name, expected in RULE_CASES:
         line = form.format(v=LONG_DUMMY)
-        assert rule_gives(line, name) == expected, (line, pieces(line))
+        assert rule_gives(line, name) == expected, (line, [piece_numbers(p) for p in pieces(line)])
 
 
 def test_s7_44_length_command_runs_and_prints_only_numbers(tmp_path: Path) -> None:
@@ -654,11 +672,14 @@ def test_s7_44_length_command_runs_and_prints_only_numbers(tmp_path: Path) -> No
             capture_output=True,
             text=True,
             check=True,
+            cwd=tmp_path,
         )
         output = run.stdout.splitlines()
-        assert output and all(re.fullmatch(r"\d+ \d+", row) for row in output), (line, run.stdout)
+        assert output and all(re.fullmatch(r"\d+ \d+ [01] [01]", row) for row in output), (line, run.stdout)
         assert LONG_DUMMY[3:11] not in run.stdout
-        assert output == [f"{i} {len(part)}" for i, part in enumerate(pieces(line), 1)], (line, run.stdout)
+        expected = [f"{i} {' '.join(map(str, piece_numbers(part)))}" for i, part in enumerate(pieces(line), 1)]
+        assert output == expected, (line, run.stdout)
+    assert sorted(p.name for p in tmp_path.iterdir()) == ["keys.txt"], "the command wrote a file"
 
 
 def test_s7_44_one_effort_per_finding() -> None:
