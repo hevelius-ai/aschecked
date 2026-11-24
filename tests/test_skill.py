@@ -556,11 +556,22 @@ def test_s7_29_numbered_masked_read_hides_values() -> None:
 # longest piece is not always the value; the rule and the character set were not pinned), round 3 (R3-1, R3-2: the
 # awk test compared part of its output; lines with no key gave an "exact" number) and the re-check (H1: the model
 # could not see whether a piece holds digits, so the command now prints it; S7-48: a variable's name holding a digit
-# and a full stop after the value are handled, not left as known limits). S7-46 2A (owner): exact where it can be
-# counted for certain, otherwise "length not certain".
+# and a full stop after the value are handled), round 4 (N4-1, R3-2: a key in capitals was taken for a name, and
+# dotted or snake-case names were taken for keys; N4-3 to N4-5: unproven parts, a half-pinned sentence, named limits).
+# S7-46 2A (owner): exact where it can be counted for certain, otherwise "length not certain". S7-49 A (owner): the
+# remaining edge cases are named known limits below, and the full test measures real accuracy.
+NAME_IN_CODE = (
+    "env[.]|^[A-Za-z_][A-Za-z0-9_]*([.][A-Za-z_][A-Za-z0-9_]*)+$|^[A-Z0-9]*_[A-Z0-9_]*$|^[a-z0-9]*_[a-z0-9_]*$"
+)
 LENGTH_COMMAND = (
     "awk -F'[^A-Za-z0-9_.+/~-]+' 'NR==<line> {for (i=1; i<=NF; i++) {p=$i; sub(/[.]+$/, e, p); print i, length(p), "
-    "(p ~ /[A-Za-z]/) * (p ~ /[0-9]/), (p ~ /env[.]|^[A-Z0-9_]+$/)}}' <file>"
+    f"(p ~ /[A-Za-z]/) * (p ~ /[0-9]/), (p ~ /{NAME_IN_CODE}/)}}}}' <file>"
+)
+LENGTH_SENTENCE = (
+    "which prints four numbers for each piece of the line, never its text: its position, its length (full stops at its "
+    "end not counted), 1 if it holds both letters and digits, and 1 if it looks like a name in code (it contains "
+    "`env.`; or it is a dotted name such as `config.apiKey`; or it has a `_` and otherwise only capitals and digits, "
+    "or only small letters and digits):"
 )
 LENGTH_RULE = (
     "Report a piece's length as the key's exact length only when it is the only piece after the key's name that is "
@@ -604,6 +615,31 @@ RULE_CASES = [
     ("clientSecret: process.env.AUTH0_CLIENT_SECRET,", "clientSecret", None),
     ("secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,", "secretAccessKey", None),
     ("const token = S3_UPLOAD_TOKEN_2026;", "token", None),
+    # Round 4 (N4-1): a key in capitals and digits only is a value, not a name.
+    ("AWS_ACCESS_KEY_ID=AKIAZ7QW3EXAMPLE2X9P", "AWS_ACCESS_KEY_ID", 20),
+    ('new AWS.S3({{ accessKeyId: "AKIAZ7QW3EXAMPLE2X9P", secretAccessKey: "{v}" }})', "accessKeyId", None),
+    ("AWS_ACCESS_KEY_ID=AKIAZ7QW3EXAMPLE2X9P AWS_SECRET_ACCESS_KEY={v} aws s3 sync", "AWS_ACCESS_KEY_ID", None),
+    # Round 4 (R3-2): names in code with a digit, written in other forms.
+    ("AUTH0_CLIENT_SECRET: ${{{{ secrets.AUTH0_CLIENT_SECRET }}}}", "AUTH0_CLIENT_SECRET", None),
+    ("AWS_SECRET_ACCESS_KEY: ${{{{ secrets.S3_SECRET_ACCESS_KEY }}}}", "AWS_SECRET_ACCESS_KEY", None),
+    ("secretKey: settings.AWS_S3_SECRET_ACCESS_KEY,", "secretKey", None),
+    ("client_secret = var.auth0_client_secret", "client_secret", None),
+    ("clientSecret: config.auth0ClientSecret,", "clientSecret", None),
+    ('apiKey: os.getenv("auth0_client_secret"),', "apiKey", None),
+    # Round 4 (N4-3): digits alone are not letters and digits; several full stops; the threshold's edge.
+    ("API_KEY={v} # rotated 2026-11-24", "API_KEY", 33),
+    ("API_KEY={v}...", "API_KEY", 33),
+    ("API_KEY=ab12cd34e", "API_KEY", 9),
+]
+# Named known limits (S7-49 A): what the rule gives on lines where it is wrong, kept so any change is seen. The full
+# test measures how often such lines occur in real reports. (line form, name, what the rule gives, the truth)
+KNOWN_LIMITS = [
+    # A placeholder followed by a URL in a comment: the URL's last part holds a digit.
+    ("OPENAI_API_KEY=your-key-here # https://api.openai.com/v1/models", "OPENAI_API_KEY", 26, "no key"),
+    # A shell default: the `-` before the value is in the key alphabet.
+    ("api_key: ${{OPENAI_KEY:-{v}}}", "api_key", 34, 33),
+    # An unsigned JWT ends in a full stop and reads as a dotted name: a safe miss ("not certain"), not a wrong number.
+    ("JWT=eyJhbGciOiJub25lIn0.eyJzdWIiOiIxMjMifQ.", "JWT", None, 42),
 ]
 
 
@@ -618,7 +654,7 @@ def piece_numbers(piece: str) -> tuple[int, int, int]:
     # The command's program applied in Python: a full stop at the end dropped; letters and digits; a name in code.
     p = re.sub(r"[.]+$", "", piece)
     both = int(bool(re.search("[A-Za-z]", p)) and bool(re.search("[0-9]", p)))
-    name_like = int(bool(re.search(r"env[.]|^[A-Z0-9_]+$", p)))
+    name_like = int(bool(re.search(NAME_IN_CODE, p)))
     return len(p), both, name_like
 
 
@@ -636,12 +672,8 @@ def test_s7_44_exact_key_length_rule() -> None:
     limits = flat(section("Hard limits"))
     assert f"`{LENGTH_COMMAND}`" in limits
     assert LENGTH_RULE in limits
-    for phrase in (
-        "its exact length in characters, public-by-design keys too",
-        "prints four numbers for each piece of the line, never its text",
-        "1 if it holds both letters and digits, and 1 if it looks like a name in code",
-    ):
-        assert phrase in limits, phrase
+    assert LENGTH_SENTENCE in limits
+    assert "its exact length in characters, public-by-design keys too" in limits
     # PR review round 1 (finding 3) and the S7-44 Windows proof: a double quote breaks it in Windows PowerShell 5.1,
     # and a backslash escape is read as plain characters when awk is started by a Windows program. A `>` would make
     # awk's print write a file.
@@ -658,11 +690,18 @@ def test_s7_44_the_rule_gives_the_value_or_not_certain() -> None:
         assert rule_gives(line, name) == expected, (line, [piece_numbers(p) for p in pieces(line)])
 
 
+def test_s7_44_known_limits_stay_as_named() -> None:
+    for form, name, gives, truth in KNOWN_LIMITS:
+        line = form.format(v=LONG_DUMMY)
+        assert rule_gives(line, name) == gives, (line, [piece_numbers(p) for p in pieces(line)])
+        assert gives != truth
+
+
 def test_s7_44_length_command_runs_and_prints_only_numbers(tmp_path: Path) -> None:
     awk = shutil.which("awk")
     if awk is None:
         pytest.skip("no awk on this system")
-    lines = [form.format(v=LONG_DUMMY) for form, _, _ in RULE_CASES]
+    lines = [form.format(v=LONG_DUMMY) for form, *_ in RULE_CASES + KNOWN_LIMITS]
     path = tmp_path / "keys.txt"
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
     separator, program = re.fullmatch(r"awk -F'(.+?)' '(.+?)' <file>", LENGTH_COMMAND).groups()
