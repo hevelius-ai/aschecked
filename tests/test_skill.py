@@ -542,3 +542,50 @@ def test_s7_29_numbered_masked_read_hides_values() -> None:
         masked = re.sub(pattern, example.group(2), line)
         assert DUMMY not in masked, f"value shown: {line!r} -> {masked!r}"
         assert "<hidden>" in masked
+
+
+# S7-44 2A (owner, 24 Nov 2026): the S7-42 re-score found reports giving a key's length as a bound, a range, the
+# whole line's length or not at all (public-by-design keys included), and a fix's effort as a range or two sizes.
+# Written before the skill change and seen failing.
+def length_command() -> str:
+    match = re.search(r"`(awk 'NR==<line> \{.*?\}' <file>)`", section("Hard limits"))
+    assert match, "no one-command length example in the form `awk 'NR==<line> {...}' <file>`"
+    return match.group(1)
+
+
+def apply_length_command(command: str, line: str) -> str:
+    # The awk example applied as written: its sub() and gsub() patterns, POSIX classes and octal escapes translated.
+    subs = re.findall(r"(g?sub)\(/(.+?)/, \"\"\)", command)
+    assert [name for name, _ in subs] == ["sub", "gsub"], subs
+    for name, pattern in subs:
+        pattern = pattern.replace("[:space:]", r"\s")
+        pattern = re.sub(r"\\([0-7]{3})", lambda m: re.escape(chr(int(m.group(1), 8))), pattern)
+        line = re.sub(pattern, "", line, count=1 if name == "sub" else 0)
+    assert "print length($0)" in command
+    return str(len(line))
+
+
+def test_s7_44_exact_key_length_rule() -> None:
+    limits = flat(section("Hard limits"))
+    for phrase in (
+        "its exact length in characters, public-by-design keys too",
+        "which prints only a number",
+        "never a range, a bound or the length of the whole line",
+    ):
+        assert phrase in limits, phrase
+    assert "named by kind, file, line and exact length, never its value" in flat(section("Report"))
+
+
+def test_s7_44_length_command_prints_only_the_length() -> None:
+    command = length_command()
+    for line in KEY_LINES:
+        result = apply_length_command(command, line)
+        assert result == str(len(DUMMY)), f"{line!r} -> {result!r}"
+        assert DUMMY not in result
+
+
+def test_s7_44_one_effort_per_finding() -> None:
+    assert "Fix: plain words. Effort: one word: small, medium or large." in report_template()
+    report = flat(section("Report"))
+    assert "Each finding has one effort" in report
+    assert "never a range or two sizes" in report
