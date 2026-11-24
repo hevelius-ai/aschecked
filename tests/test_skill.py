@@ -647,6 +647,8 @@ RULE_CASES = [
     (f"STRIPE_SECRET_KEY={STRIPE_LIVE}Zq8xYv3Lm2Np7Rt4Wk9Bc6Hd", "STRIPE_SECRET_KEY", 32),
     ("apiKey: process.env.SERVICE-KEY2,", "apiKey", None),
     ("API_KEY={v}@host", "API_KEY", 33),
+    # Confirm check (N5-5): a dotted part starting with a digit is not a name in code.
+    ("TOKEN=Zq8xYv3Lm2.4Np7Rt4Wk9", "TOKEN", 21),
 ]
 # Named known limits (S7-49 A): what the rule gives on lines where it is wrong, kept so any change is seen. The full
 # test measures how often such lines occur in real reports. (line form, name, what the rule gives, the truth)
