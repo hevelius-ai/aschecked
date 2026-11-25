@@ -2,7 +2,8 @@
 
 Back to the [README](../README.md).
 
-**The easiest way** is the one in the README: open Claude Code in a new, empty folder and paste this message.
+**The easiest way** is the one in the README: in a Claude Code session on your project, in Auto mode, paste this
+message.
 It puts AsChecked in `.claude/skills/aschecked` in your home folder, so it works in every project, and asks
 before it writes there. To update AsChecked, paste the message from the README again: it always names the
 newest version.
@@ -17,9 +18,8 @@ Change nothing else. Finally, check that .claude/skills/aschecked/SKILL.md is in
 "AsChecked is installed".
 ```
 
-We tried this once on Windows 11, before the release, with the branch's download address. The README's Mac
-steps (opening a terminal at a folder, showing hidden files, copying from the terminal) and Linux are not tried
-yet.
+We tried this once on Windows 11, before the release, with the branch's download address. On a Mac or Linux it is
+not tried yet.
 
 **Or install it another way** (one of these):
 
