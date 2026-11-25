@@ -515,7 +515,8 @@ def test_s7_20_says_where_to_save_the_report() -> None:
 
 
 def test_s7_20_says_how_to_download_the_prompt_file() -> None:
-    chat = between(flat(text()), "## No Claude Code? Use a claude.ai chat", "## More")  # S7-31: new headings
+    # round 3 L2: the chat section ends where the other-tools section starts
+    chat = between(flat(text()), "## No Claude Code? Use a claude.ai chat", "## Not using Claude? Other AI tools")
     assert "**Download raw file**" in chat
 
 
@@ -828,6 +829,7 @@ def test_s7_31_install_is_a_pasted_prompt() -> None:
         "choose **Auto**",
         "**Yes, copy it**",
         "type `yes`",
+        "otherwise click its no button",  # round 3 L3
         r"`.claude\skills\aschecked`",
         'Wait for "AsChecked is installed"',
         "paste this message again in Auto mode",
@@ -1013,7 +1015,7 @@ def test_s7_44_full_test_section() -> None:
     for phrase in (
         "our full test ran AsChecked (commit `f574112`) on 24 sample apps",
         "| **Claude Fable 5.2, medium, Auto (recommended)** | **112 of 120** (88.4 to 97.9%) | 95 of 95 |",
-        "| Claude Fable 5.2, medium, plan mode | 116 of 120 |",
+        "| Claude Fable 5.2, medium, plan mode | 116 of 120 (0 to 100%) |",  # S7-53 1A
         "| Codex, GPT-6-Luna, medium, read-only | 72 of 110 (47.5 to 80.5%) |",
         "**Is Auto as good as plan mode?**",
         "**Recommended: Claude Fable 5.2 at medium effort, in Auto.**",

@@ -41,8 +41,8 @@ not tried yet.
   `npx skills add hevelius-ai/aschecked -a claude-code -y`. It puts the skill in `.claude/skills/aschecked` and
   adds a `skills-lock.json` file to your project's folder.
 
-Start Claude Code after installing it: in our earlier tests, a Claude Code session that was already open did not see the
-newly installed skill.
+Start Claude Code after installing it in one of these other ways: in our earlier tests, a Claude Code session that was
+already open did not see the newly installed skill (in it, `/reload-skills` may help).
 
 **To remove AsChecked:** delete the `aschecked` folder it was installed into (`.claude/skills/aschecked` in your
 project, or `~/.claude/skills/aschecked` in your home folder); the GitHub CLI has no uninstall command. If you
