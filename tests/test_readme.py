@@ -76,16 +76,23 @@ def test_first_screen_names_tested_models_and_warning() -> None:
     assert "Claude Sonnet 5.5" in flat(doc("how-we-tested.md"))
 
 
-def test_start_with_aschecked_in_plan_mode() -> None:
-    body = flat(text())
-    assert re.search(r"plan mode[^.]*`/aschecked`|`/aschecked`[^.]*plan mode", body), "no sentence pairing them"
+# Locked check changed under S7-37 and S7-44 (owner, 24 and 25 Nov 2026): plan mode is no longer required for the
+# review; the desktop steps keep Auto (step 4) and then start the review with `/aschecked` (step 5). The old check
+# passed on the new README only through the Antigravity row of the other-tools table.
+def test_start_with_aschecked_in_auto() -> None:
+    steps = items(part("In the Claude desktop app"))
+    assert "Keep **Auto**" in steps[3], steps[3]
+    assert "type `/aschecked`" in steps[4], steps[4]
 
 
+# Locked check changed under S7-39 2A (owner, 24 Nov 2026): the instruction-files check left the README for the
+# docs/git-safety.md section "A project from someone else", which the README's "What you need" links.
 def test_instruction_files_warning() -> None:
-    body = flat(text())
+    assert "(docs/git-safety.md#a-project-from-someone-else)" in text()
+    body = flat(doc("git-safety.md")).split("## A project from someone else")[1]
     for name in ("`CLAUDE.md`", "`AGENTS.md`", "`.cursorrules`"):
         assert name in body, name
-    assert "by itself" in body
+    assert "by themselves" in body
     assert "warning sign" in body
 
 
@@ -95,10 +102,11 @@ def test_ai_reads_your_files() -> None:
     assert "never shows a key's value" in body
 
 
+# Locked check changed under S7-40 (owner, 24 Nov 2026): "keep planning" became one sentence in the start step of
+# each list: a box asking to approve a plan is answered No.
 def test_keep_planning_if_asked() -> None:
-    body = flat(text())
-    assert "keep planning" in body
-    assert "the report is the answer" in body
+    for step in (items(part("In the Claude desktop app"))[4], terminal_steps()[4]):
+        assert "approve a plan, choose **No**" in step, step
 
 
 # Locked check changed under S7-25 A (owner, 22 Nov 2026): this content moved from the README to a docs/ page,
@@ -217,9 +225,12 @@ def test_s7_19_best_setting_is_named_first_and_in_the_start_command() -> None:
     # S7-31 (test table): the banner says "did best" and the table's first row says "(best)".
     screen = first_screen()
     assert "Claude Fable 5.2 at medium effort did best" in screen
-    assert "**Claude Fable 5.2, medium (best)**" in flat(text())
-    body = flat(text())
-    assert "`claude --model fable --effort medium`" in body
+    # S7-36 and S7-42 2A (owner, 23 and 24 Nov 2026): the README names the settings for the desktop app; the
+    # settings table and the start commands moved to docs/terminal.md.
+    assert "**Claude Fable 5.2 at medium effort (best)**" in flat(text())
+    assert "**Claude Fable 5.2, medium (best)**" in flat(doc("terminal.md"))
+    body = flat(text() + doc("terminal.md"))
+    assert "`claude --model fable --effort medium`" in flat(doc("terminal.md"))
     assert "--effort max" not in body
     assert "Use Claude Opus 5.5 at max effort" not in body
 
@@ -351,10 +362,14 @@ def test_no_tracked_file_names_an_outside_project() -> None:
 # Added in S7 (owner 17 Nov, S7-1): the mode named up front. The release banner's test is in tests/test_repo.py (S7-9).
 def test_mode_is_named_before_the_install_steps() -> None:
     # S7-31 (test table): the new headings; the plan-mode line is in "How it works", before "Install it (once)".
-    before_install = flat(text()).split("## Install it (once)")[0]
-    assert "plan mode" in before_install
-    assert "Shift+Tab" in before_install
-    assert "is meant to keep Claude reading" in before_install  # review round 1, finding 3: keep the hedge
+    # Locked check changed under S7-36, S7-37 and S7-44 (owner, 23 to 25 Nov 2026): "How it works" names both modes
+    # before the desktop steps, with the hedge (S7-53: neither mode can promise that nothing changes); Shift+Tab is a
+    # terminal key and moved with the terminal steps to docs/terminal.md (S7-42 2A).
+    assert "\n## In the Claude desktop app\n" in text()
+    before_install = flat(text()).split("## In the Claude desktop app")[0]
+    for phrase in ("Auto mode", "plan mode", "**It is meant only to read.**", "Neither mode can promise"):
+        assert phrase in before_install, phrase
+    assert "Shift+Tab" in terminal_steps()[2]
 
 
 # Added in S7 (the walker load proof, 17 Nov): without --all, gh lists the skill and installs nothing when no one can
@@ -376,9 +391,17 @@ def test_gh_install_needs_no_prompt_and_claude_code_starts_after() -> None:
 def test_which_version_it_reviews() -> None:
     # S7-31 (test table): the section became review step 2 and the unfinished-work sentence in review step 7 and
     # chat step 5 (R6.1); "may look at your other branches" moved to docs/git-safety.md. The docs half is unchanged.
-    run = flat(part("Run a review"))
-    for phrase in ("finished app", "`git checkout main`", "another branch", "not built yet", "separately"):
-        assert phrase in run, phrase
+    # Locked check changed under S7-39 1A and S7-42 2A (owner, 24 Nov 2026): the version is one optional line in
+    # step 1 of each list (desktop in the README, terminal on docs/terminal.md); step 6 holds the unfinished part.
+    desktop = items(part("In the Claude desktop app"))
+    terminal = terminal_steps()
+    for phrase in ("finished app", "usually main or master"):
+        assert phrase in desktop[0], phrase
+    for phrase in ("finished app", "`git checkout`", "`main`"):
+        assert phrase in terminal[0], phrase
+    for step in (desktop[5], terminal[5]):
+        for phrase in ("not built yet", "separately"):
+            assert phrase in step, phrase
     chat = flat(part("No Claude Code? Use a claude.ai chat"))
     for phrase in ("**Download ZIP**", "choose it first", "not built yet", "separately"):
         assert phrase in chat, phrase
@@ -395,9 +418,11 @@ def test_which_version_it_reviews() -> None:
 # Locked check changed under S7-31 (owner, 23 Nov 2026, "S7-31 all leans"; design DESIGN-S7-31.md, test table):
 # the steps no longer point to a section; choosing the version is review step 2 itself
 # (test_s7_31_review_steps), and nothing in the README points to another part of it (test_s7_31_no_cross_references).
+# Locked check changed under S7-39 1A (owner, 24 Nov 2026): step 1 of each list carries the optional version line.
 def test_run_steps_point_to_choosing_the_branch() -> None:
-    step = re.split(r"^\d+\. ", part("Run a review"), flags=re.M)[2]  # S7-31 walkthrough w5 (F1): step 2
-    assert step.startswith("**Choose the version.**")
+    for step in (items(part("In the Claude desktop app"))[0], terminal_steps()[0]):
+        assert "If you use git branches" in step, step
+        assert "if not, skip this" in step, step
     assert "Which version it reviews" not in text()
 
 
@@ -482,8 +507,11 @@ def test_s7_20_gh_install_warning_is_explained() -> None:
 
 def test_s7_20_says_where_to_save_the_report() -> None:
     # S7-31 (test table): review step 10, "Save the report".
-    step = between(flat(text()), "10. **Save the report.**", "11. **Fix what it found.**")
-    assert "paste it into a text file outside your project's folder" in step
+    # Locked check changed under S7-40 (owner, 24 Nov 2026): step 7 of each list, "Your report is ready", with saving
+    # optional.
+    for step in (items(part("In the Claude desktop app"))[6], terminal_steps()[6]):
+        assert step.startswith("**Your report is ready.**"), step
+        assert "into a text file outside your project's folder" in step, step
 
 
 def test_s7_20_says_how_to_download_the_prompt_file() -> None:
@@ -510,7 +538,10 @@ def bullet(name: str) -> str:
 def test_s7_21_how_the_tools_were_tried_is_stated() -> None:
     section = other_tools()
     for phrase in (
-        "tried it once",
+        # Locked check changed under S7-44 and S7-53 (owner, 24 and 25 Nov 2026): Codex and Antigravity also ran in
+        # the full test, so the opening no longer says "tried it once".
+        "we tried it in five of them",
+        "Codex and Antigravity in our full test",
         "our own small test projects",
         "met all our report checks (every required part, and evidence that matches the files)",
         "changed no file",
@@ -599,16 +630,22 @@ def test_s7_21_nothing_is_called_proven() -> None:
 # Added for the owner's S7-25 A (22 Nov 2026): the README is one simple screen for people who build with AI and do not
 # code; the technical detail moves to pages in docs/ that the README links. Safety lines stay in the README.
 DOCS = ROOT / "docs"
-DOC_PAGES = ("how-we-tested.md", "other-tools.md", "install-options.md", "git-safety.md")
+# S7-42 2A (owner, 24 Nov 2026): the terminal steps have their own page.
+DOC_PAGES = ("how-we-tested.md", "other-tools.md", "install-options.md", "git-safety.md", "terminal.md")
 
 
 def doc(name: str) -> str:
     return (DOCS / name).read_text(encoding="utf-8")
 
 
+def terminal_steps() -> list[str]:
+    return items(doc("terminal.md").split("\n## Steps\n", 1)[1])
+
+
+# Locked check changed under S7-36 (owner, 23 Nov 2026; design DESIGN-S7-36.md, "Word cap 2,000").
 def test_s7_25_readme_is_short() -> None:
     words = len(text().split())
-    assert words <= 1300, f"README has {words} words; the cap is 1,300"  # S7-33 (owner, 23 Nov 2026): was 900
+    assert words <= 2000, f"README has {words} words; the cap is 2,000"  # S7-33: 1,300; S7-31: 900
 
 
 def test_s7_25_docs_pages_exist_and_the_readme_links_each() -> None:
@@ -617,19 +654,24 @@ def test_s7_25_docs_pages_exist_and_the_readme_links_each() -> None:
         assert f"(docs/{name})" in text(), f"README does not link docs/{name}"
 
 
+# Locked check changed under S7-39 and S7-40 (owner, 24 Nov 2026; design DESIGN-S7-36.md, test table): "keep
+# planning" became "approve a plan, choose **No**"; the instruction-files lines ("warning sign", the D6 limit) are on
+# the linked docs/git-safety.md section; the mode warning is in step 4 of each list (desktop: "Do not use Accept edits
+# or Bypass permissions"; terminal, on docs/terminal.md under S7-42 2A: "Never start the review with ...").
 def test_s7_25_safety_lines_stay_in_the_readme() -> None:
     body = flat(text())
     for phrase in (
         "plan mode",
-        "keep planning",
-        "warning sign",
+        "approve a plan, choose **No**",
         "including any keys",
         "not an audit",
-        # S7-25 review round 1 (HIGH and MEDIUM): the mode warning and the D6 limit stay in the README.
-        "Do not start the review in auto-accept or bypass-permissions mode",
-        "cannot stop your tool from loading the file",
+        "Do not use Accept edits or Bypass permissions",
     ):
         assert phrase in body, phrase
+    someone_else = flat(doc("git-safety.md")).split("## A project from someone else")[1]
+    for phrase in ("warning sign", "cannot stop your tool from loading such a file"):
+        assert phrase in someone_else, phrase
+    assert 'Never start the review with "accept edits on" or "bypass permissions on"' in terminal_steps()[3]
     assert re.search(r"never (says|tells you)[^.]*safe", body), "never says a project is safe"
 
 
@@ -702,13 +744,17 @@ def test_s7_29_final_sandbox_round_is_stated() -> None:
 # in three rounds): the README as numbered steps for people who build with AI and do not code, with nothing that sends
 # the reader to another part of it, an install by one pasted prompt, and only the three best settings. Written before
 # the README and seen failing.
+# Locked checks changed under S7-36 1A, S7-41 and S7-42 2A (owner, 23 and 24 Nov 2026; design DESIGN-S7-36.md, test
+# table): the desktop app first, the terminal steps on docs/terminal.md with one README line linking it, then the chat
+# route and the other AI tools.
 S7_31_HEADINGS = [
     "What you get",
     "How it works",
-    "What you need in Claude Code",
-    "Install it (once)",
-    "Run a review",
+    "What you need",
+    "In the Claude desktop app",
+    "In a terminal",
     "No Claude Code? Use a claude.ai chat",
+    "Not using Claude? Other AI tools",
     "More",
     "Licence",
 ]
@@ -754,7 +800,7 @@ def test_s7_31_first_screen() -> None:
 
 INSTALL_PROMPT = (
     "https://github.com/hevelius-ai/aschecked/archive/refs/tags/v1.0.0.zip",
-    "into this folder and unpack it here",
+    "into a new temporary folder outside this project and unpack it there",  # S7-37: changed from "into this folder"
     "tell me in two sentences what they do",
     "wait for my yes",
     "copy that folder to .claude/skills/aschecked in my home folder",
@@ -766,90 +812,247 @@ INSTALL_PROMPT = (
 )
 
 
+# Locked check changed under S7-36, S7-37 and S7-42 2A (owner, 23 and 24 Nov 2026): the install is step 3 ("First
+# time only") of each list, in Auto, in the same session on the project; the pasted message is identical in the
+# README, on docs/terminal.md and on docs/install-options.md; no `/exit` (one session).
 def test_s7_31_install_is_a_pasted_prompt() -> None:
-    install = part("Install it (once)")
-    steps = items(install)
-    assert len(steps) == 7, len(steps)
-    prompt = fenced_prompt(install)
+    desktop = part("In the Claude desktop app")
+    prompt = fenced_prompt(desktop)
     for phrase in INSTALL_PROMPT:
         assert phrase in prompt, phrase
-    body = flat(install)
-    for phrase in (
-        "new, empty folder (not your project)",
-        "Open in Terminal",
-        "New Terminal at Folder",
-        "Type `claude`",  # corrected before review: the step starts a sentence
-        "Type `yes`",
-        "`.claude/skills/aschecked`",
-        'the plain **Yes**, not "don\'t ask again"',
-        "delete what it downloaded",
-        "choose **No**",
-        "`/exit`",
-        "paste the message from this page again",
-        "it always names the newest version",  # S7-31 PR review round 1 (L4)
-    ):
-        assert phrase in body, phrase
-    # S7-31 PR review round 1 (M1): each approval step says the plain Yes itself, and step 5 the folder to check.
-    plain_yes = 'the plain **Yes**, not "don\'t ask again"'
-    assert plain_yes in steps[2] and "otherwise **No**" in steps[2], steps[2]
-    assert plain_yes in steps[4] and "Check that it names `.claude/skills/aschecked`" in steps[4], steps[4]
-    assert "the plain **Yes**" in steps[5] and "delete what it downloaded" in steps[5], steps[5]
-    assert "anything else, choose **No**" in steps[5], steps[5]
-    # S7-31 PR review round 1 (M5), from the owner's notes: Claude Code asks to trust the folder on first start,
-    # and Windows shows the path with backslashes.
-    assert "trust this folder, choose **Yes**" in steps[0], steps[0]
-    assert r"`.claude\skills\aschecked`" in steps[4], steps[4]
-    assert not re.search(r"\b(gh|npx)\b", text())
+    assert fenced_prompt(doc("terminal.md")) == prompt
     assert fenced_prompt(doc("install-options.md")) == prompt
+    step = items(desktop)[2]
+    for phrase in (
+        "**First time only: install AsChecked.**",
+        "choose **Auto**",
+        "**Yes, copy it**",
+        "type `yes`",
+        r"`.claude\skills\aschecked`",
+        'Wait for "AsChecked is installed"',
+        "paste this message again in Auto mode",
+        "this page always names the newest version",
+    ):
+        assert phrase in step, phrase
+    step = terminal_steps()[2]
+    for phrase in (
+        "**First time only: install AsChecked.**",
+        '"auto mode on"',
+        "Shift+Tab",
+        "type `yes` only if it names your home `.claude/skills/aschecked` folder",
+        r"`.claude\skills\aschecked`",
+        'the plain **Yes**, not "don\'t ask again"',
+        "otherwise **No**",
+        'Wait for "AsChecked is installed"',
+        "this page always names the newest version",
+    ):
+        assert phrase in step, phrase
+    assert "`/exit`" not in text() + doc("terminal.md")
+    assert not re.search(r"\b(gh|npx)\b", text())
 
 
+# Locked check changed under S7-36 and S7-42 2A (owner, 23 and 24 Nov 2026): the settings table moved to
+# docs/terminal.md, rows unchanged; the README's "What you need" names the same three settings for the desktop app.
 def test_s7_31_three_settings_only() -> None:
-    lines = [line for line in part("What you need in Claude Code").splitlines() if line.startswith("|")]
+    page = doc("terminal.md").split("\n## The three settings\n", 1)[1].split("\n## ", 1)[0]
+    lines = [line for line in page.splitlines() if line.startswith("|")]
     rows = [[cell.strip() for cell in line.strip("|").split("|")] for line in lines]
     assert rows[2:] == [
         ["**Claude Fable 5.2, medium (best)**", "`claude --model fable --effort medium`"],
         ["Claude Opus 5.5, medium", "`claude --model opus --effort medium`"],
         ["Claude Fable 5.2, low", "`claude --model fable --effort low`"],
     ], rows
+    need = flat(part("What you need"))
+    assert (
+        "**Claude Fable 5.2 at medium effort (best)**, Claude Opus 5.5 at medium effort, or Claude Fable 5.2 at low "
+        "effort" in need
+    )
     assert "Sonnet" not in text()
-    assert "https://code.claude.com/docs/en/setup" in part("What you need in Claude Code")
+    assert "https://code.claude.com/docs/en/setup" in doc("terminal.md")
 
 
-REVIEW_STEPS = [
-    ("**Open a terminal in your project's folder.**", "Open in Terminal", "New Terminal at Folder"),
-    # S7-31 walkthrough w5 (F1, MEDIUM): choose the version first, then check that version's instruction files.
-    ("**Choose the version.**", "`git checkout main`", "another branch"),
+# Locked check changed under S7-36, S7-37, S7-39, S7-40, S7-44 and S7-53 (owner, 23 to 25 Nov 2026): the eleven
+# terminal steps became two lists of seven, desktop (README) and terminal (docs/terminal.md, S7-42 2A); the mode step
+# keeps Auto and warns against Accept edits and Bypass permissions; the start step says it is meant only to read and
+# to choose No for anything else or a plan.
+DESKTOP_STEPS = [
     (
-        "**Check your instruction files.**",
-        "`CLAUDE.md`",
-        "`AGENTS.md`",
-        "`.cursorrules`",
-        "warning sign",
-        "AsChecked reports such text, but it cannot stop your tool from loading the file",
+        "**Start a session on your project.**",
+        "If you use git branches",
+        "usually main or master",
+        "if not, skip this",
+        "**This computer**",
+        "Untick **Worktree**",
+        "trust this folder, choose **Yes**",
     ),
-    ("**Start Claude Code.**", "`claude --model fable --effort medium`", "`claude --model opus --effort medium`"),
+    ("**Choose the model.**", "**Fable 5.2**", "**Opus 5.5**", "**Effort**", "**Medium**", "fast mode off"),
+    ("**First time only: install AsChecked.**", "choose **Auto**", '"AsChecked is installed"'),
+    ("**Choose the mode.**", "Keep **Auto**", "Do not use Accept edits or Bypass permissions."),
     (
-        "**Switch on plan mode.**",
-        "Shift+Tab",
-        "plan mode",
-        "Do not start the review in auto-accept or bypass-permissions mode",
+        "**Start the review:**",
+        "type `/aschecked`",
+        "`/reload-skills`",
+        "AsChecked is meant only to read your files.",
+        "If a box asks you to allow something else, or to approve a plan, choose **No**.",
     ),
-    ("plan mode", "`/aschecked`"),
+    ("**Answer the three questions.**", "**Next**", "**Submit**", "skip", "not built yet", "separately"),
+    (
+        "**Your report is ready.**",
+        "into a text file outside your project's folder",
+        "pass it to your AI builder",
+        "a message ready to paste",
+    ),
+]
+
+TERMINAL_STEPS = [
+    (
+        "**Open a terminal in your project's folder.**",
+        "Open in Terminal",
+        "New Terminal at Folder",
+        "If you use git branches",
+        "`git checkout`",
+        "if not, skip this",
+    ),
+    (
+        "**Start Claude Code.**",
+        "`claude --model fable --effort medium`",
+        "`claude --model opus --effort medium`",
+        "trust this folder, choose **Yes**",
+    ),
+    ("**First time only: install AsChecked.**", '"auto mode on"', '"AsChecked is installed"'),
+    ("**Choose the mode.**", 'Never start the review with "accept edits on" or "bypass permissions on"'),
+    (
+        "**Start the review:**",
+        "type `/aschecked`",
+        "`/reload-skills`",
+        "If Claude Code asks you to allow something else, or to approve a plan, choose **No**.",
+    ),
     ("**Answer the three questions**", '"skip"', "not built yet", "separately"),
-    ("**Approve only reading.**", 'the plain **Yes**, not "don\'t ask again"', "only reads", "choose **No**"),
-    ("**Keep planning.**", "choose to keep planning", "approving would let it start changing your project"),
-    ("**Save the report.**", "outside your project's folder"),
-    ("**Fix what it found.**", '"Paste to your AI builder"', "without plan mode"),
+    ("**Your report is ready.**", "outside your project's folder", "Ctrl+Shift+C", "pass it to your AI builder"),
 ]
 
 
 def test_s7_31_review_steps() -> None:
-    steps = items(part("Run a review"))
-    assert len(steps) == len(REVIEW_STEPS), len(steps)
-    for number, (step, phrases) in enumerate(zip(steps, REVIEW_STEPS, strict=True), 1):
-        for phrase in phrases:
-            assert phrase in step, (number, phrase)
-    assert "trust this folder, choose **Yes**" in steps[3], steps[3]  # S7-31 PR review round 1 (M5)
+    for steps, table in (
+        (items(part("In the Claude desktop app")), DESKTOP_STEPS),
+        (terminal_steps(), TERMINAL_STEPS),
+    ):
+        assert len(steps) == len(table), len(steps)
+        for number, (step, phrases) in enumerate(zip(steps, table, strict=True), 1):
+            for phrase in phrases:
+                assert phrase in step, (number, phrase)
+
+
+# Added for S7-36, S7-42 2A, S7-44 and S7-53 (owner, 23 to 25 Nov 2026). Written before the README and docs changed
+# and seen failing.
+def slug(heading: str) -> str:
+    """GitHub's anchor for a heading: lower case, punctuation dropped, spaces as hyphens."""
+    return re.sub(r"[^a-z0-9 _-]", "", heading.strip().lower()).replace(" ", "-")
+
+
+def test_s7_42_readme_links_the_terminal_page_and_the_test_section() -> None:
+    assert "(docs/terminal.md)" in text()
+    assert "(docs/how-we-tested.md#plan-mode-and-auto-mode)" in text()
+    assert (DOCS / "terminal.md").is_file()
+    assert "\n## Plan mode and Auto mode\n" in doc("how-we-tested.md")
+    # S7-42 2A: the README keeps one line for the terminal, linking the page.
+    lines = [line for line in part("In a terminal").splitlines() if line.strip()]
+    assert len(lines) == 1 and "(docs/terminal.md)" in lines[0], lines
+    assert "[README](../README.md)" in doc("terminal.md")
+
+
+def test_s7_36_every_anchor_link_resolves() -> None:
+    pages = {"README.md": text(), **{f"docs/{name}": doc(name) for name in DOC_PAGES}}
+    for source, body in pages.items():
+        base = Path(source).parent
+        for target in re.findall(r"\]\(([^)\s]+#[^)\s]+)\)", body):
+            if re.match(r"[a-z]+:", target):
+                continue
+            path, anchor = target.split("#", 1)
+            page = body if not path else (ROOT / base / path).resolve().read_text(encoding="utf-8")
+            anchors = {slug(h) for h in re.findall(r"^#{1,6} (.+)$", page, re.M)}
+            assert anchor in anchors, f"{source}: {target}"
+
+
+def test_no_bracketed_placeholder_in_readme_or_docs() -> None:
+    for path in [README, *sorted(DOCS.glob("*.md"))]:
+        body = path.read_text(encoding="utf-8")
+        # Brackets that are not a link's text: a draft placeholder such as "[WAITS ...]" or "[PENDING ...]".
+        loose = re.findall(r"\[[^\]\n]*\](?!\()", body)
+        assert not loose, f"{path.name}: {loose[:3]}"
+        assert "Draft for" not in body, path.name
+
+
+def test_s7_53_the_plan_mode_file_write_is_named() -> None:
+    how = flat(part("How it works"))
+    for phrase in (
+        "Neither mode can promise that nothing changes",
+        "in one of 480 reviews (Claude Opus 5.5, plan mode), a command meant only to read wrote a small file into the "
+        "project; the fix comes in the next version",
+        "in our test, Auto was as good as plan mode for both",
+    ):
+        assert phrase in how, phrase
+    notes = flat(doc("git-safety.md"))
+    for phrase in (
+        "plan mode did not stop one shell command that wrote a file",
+        "10-byte file named `0` into the project",
+        "comes in the next version (v1.1)",
+        "(how-we-tested.md#plan-mode-and-auto-mode)",
+    ):
+        assert phrase in notes, phrase
+    section = flat(doc("how-we-tested.md")).split("## Plan mode and Auto mode")[1]
+    assert "One safety failure: Claude Opus 5.5 at medium effort in plan mode, on one app." in section
+
+
+def test_s7_44_full_test_section() -> None:
+    page = doc("how-we-tested.md")
+    sandbox = page.index("\n## Sandbox test of the released version")
+    full = page.index("\n## Plan mode and Auto mode\n")
+    assert full > sandbox, "the full-test section comes after the sandbox section"
+    section = flat(page[full:])
+    for phrase in (
+        "our full test ran AsChecked (commit `be325c9`) on 24 sample apps",
+        "| **Claude Fable 5.2, medium, Auto (recommended)** | **112 of 120** (88.4 to 97.9%) | 95 of 95 |",
+        "| Claude Fable 5.2, medium, plan mode | 116 of 120 |",
+        "| Codex, GPT-6-Luna, medium, read-only | 72 of 110 (47.5 to 80.5%) |",
+        "**Is Auto as good as plan mode?**",
+        "**Recommended: Claude Fable 5.2 at medium effort, in Auto.**",
+        "**What this test cannot show:**",
+    ):
+        assert phrase in section, phrase
+    version = flat(page.split("## Which version was tested")[1].split("\n## ")[0])
+    assert "The full test" in version and "`be325c9`" in version
+
+
+def test_s7_44_other_tools_full_test_lines() -> None:
+    assert "72 of 110 reviews were complete and correct" in bullet("Codex")
+    antigravity = bullet("Antigravity")
+    assert "10 reviews ran before its weekly quota ran out: 9 of 10 were complete and correct" in antigravity
+    assert "start it in plan mode" in antigravity  # the start instruction is unchanged
+
+
+def test_s7_41_other_ai_tools_section() -> None:
+    section = flat(part("Not using Claude? Other AI tools"))
+    for phrase in ("can also run in other AI tools", "not fully tested", "none is proven yet", "strongest model"):
+        assert phrase in section, phrase
+    rows = [r for r in table_rows(part("Not using Claude? Other AI tools"))[1:]]
+    tools = [r[0] for r in rows]
+    for tool in ("Cursor", "Codex (GPT models)", "Antigravity (Google)", "Cline", "Lovable", "Bolt"):
+        assert tool in tools, tool
+    assert any(t.startswith("ChatGPT, Gemini or another chat") for t in tools), tools
+    page = flat(doc("other-tools.md"))
+    for row in rows:
+        for path in re.findall(r"`([^`]*(?:skills/aschecked|github\.com/hevelius-ai/aschecked)[^`]*)`", row[1]):
+            assert path in page, (row[0], path)
+
+
+def test_s7_36_what_you_need_and_licence() -> None:
+    need = flat(part("What you need"))
+    assert "one you built yourself" in need
+    assert "(docs/git-safety.md#a-project-from-someone-else)" in need
+    licence = flat(part("Licence"))
+    assert "AsChecked is not a security tool" in licence
+    assert "no score, rating or certificate" in licence
 
 
 CHAT_STEPS = [

@@ -11,7 +11,7 @@ professional would fix first: data anyone can see, keys left in the open, promis
 doesn't keep. Use it with Claude Fable 5.2 or Claude Opus 5.5: weaker or free models missed serious problems in our
 tests.
 
-**What it is not:** it is not an audit, a certificate or a security scan, and it never tells you your app is safe.
+**What it is not:** it is not an audit, a certificate or a security scan, and it never tells you your app is 100% safe.
 
 ## What you get
 
@@ -20,79 +20,63 @@ message to paste to your AI builder; then up to five smaller ones, one line each
 
 ## How it works
 
-- **It is meant only to read.** It runs in Claude Code's plan mode, which is meant to keep Claude reading instead of
-  changing your files. You switch plan mode on with Shift+Tab before you start a review.
+- **It is meant only to read.** Its own rules tell Claude to read and never change your files. It works in Claude
+  Code's Auto mode and in its plan mode. We tested both on 24 sample apps with Claude Fable 5.2 and Claude Opus 5.5:
+  in our test, Auto was as good as plan mode for both (by a rule we fixed beforehand: no more than 10 points behind).
+  Neither mode can promise that nothing changes: in one of 480 reviews (Claude Opus 5.5, plan mode), a command meant
+  only to read wrote a small file into the project; the fix comes in the next version. Details:
+  [our test results](docs/how-we-tested.md#plan-mode-and-auto-mode).
 - The AI reads your project's files, including any keys written into them. The
   report never shows a key's value: it gives a key's kind, file, line and, if certain, length.
 
-## What you need in Claude Code
+## What you need
 
-- **Claude Code** (Anthropic's terminal app) and a Claude plan that includes it. To install it, see
-  https://code.claude.com/docs/en/setup
-- **Your project in a folder.**
-- **One of these three settings:**
+- **Claude Code** in the Claude desktop app, and a Claude plan that includes it. Get the app at
+  https://claude.com/download and sign in.
+- **Your project in a folder on your computer, one you built yourself.** Built in Lovable, Bolt or Replit and not on
+  your computer? Use a claude.ai chat instead. For a project from someone else, read
+  [this first](docs/git-safety.md#a-project-from-someone-else).
+- **One of these three settings:** **Claude Fable 5.2 at medium effort (best)**, Claude Opus 5.5 at medium effort, or
+  Claude Fable 5.2 at low effort.
 
-| Model and effort | Start Claude Code with |
-|---|---|
-| **Claude Fable 5.2, medium (best)** | `claude --model fable --effort medium` |
-| Claude Opus 5.5, medium | `claude --model opus --effort medium` |
-| Claude Fable 5.2, low | `claude --model fable --effort low` |
+## In the Claude desktop app
 
-## Install it (once)
-
-1. Make a new, empty folder (not your project) and open a terminal in it. On Windows, right-click inside the folder
-   and choose Open in Terminal. On a Mac, right-click the folder in Finder and choose Services, then New Terminal at
-   Folder. Type `claude` and press Enter. If it asks whether you trust this folder, choose **Yes**.
-2. Copy this message, paste it into Claude Code and press Enter:
+1. **Start a session on your project.** If you use git branches, first switch your project's folder to the version you
+   want checked (for your finished app, usually main or master), the way you usually do; if not, skip this. In the **Code** tab,
+   start a new session. In the bar under the message box, choose **This computer**, click the folder name and choose
+   your project's folder. Untick **Worktree** if it is ticked. If it asks whether you trust this folder, choose **Yes**.
+2. **Choose the model.** Click the model name and choose **Fable 5.2** (or **Opus 5.5** if the list has no Fable 5.2).
+   In the same menu, open **Effort** and choose **Medium**. Turn fast mode off if it is on.
+3. **First time only: install AsChecked.** Click the mode under the message box and choose **Auto** if it shows
+   anything else. Copy this message, paste it into the message box and send it:
 
    ```
    Install the AsChecked review skill for me. Download
-   https://github.com/hevelius-ai/aschecked/archive/refs/tags/v1.0.0.zip into this folder and unpack it here. Read
-   the files in its skills/aschecked folder and tell me in two sentences what they do. Then tell me what you will copy
-   and where, and wait for my yes. After my yes, copy that folder to .claude/skills/aschecked in my home folder,
-   replacing any older copy, and delete what you downloaded and unpacked. Change nothing else. Finally, check that
-   .claude/skills/aschecked/SKILL.md is in my home folder and say "AsChecked is installed".
+   https://github.com/hevelius-ai/aschecked/archive/refs/tags/v1.0.0.zip into a new temporary folder outside this
+   project and unpack it there. Read the files in its skills/aschecked folder and tell me in two sentences what they
+   do. Then tell me what you will copy and where, and wait for my yes. After my yes, copy that folder to
+   .claude/skills/aschecked in my home folder, replacing any older copy, and delete what you downloaded and unpacked.
+   Change nothing else. Finally, check that .claude/skills/aschecked/SKILL.md is in my home folder and say
+   "AsChecked is installed".
    ```
 
-3. Claude Code may ask before it downloads and unpacks. If it names the AsChecked download or this folder, choose
-   the plain **Yes**, not "don't ask again"; otherwise **No**.
-4. Claude Code says what the files do and what it will copy. Type `yes` and press Enter.
-5. Claude Code normally asks before it writes to your `.claude` folder. Check that it names `.claude/skills/aschecked`
-   (on Windows `.claude\skills\aschecked`), then choose the plain **Yes**, not "don't ask again".
-6. If it then asks to look inside `.claude/skills/aschecked` or to delete what it downloaded here, choose the plain
-   **Yes**. If it asks about anything else, choose **No**.
-7. When it says "AsChecked is installed", type `/exit` and press Enter.
+   When it asks to copy to your home `.claude/skills/aschecked` folder (on Windows `.claude\skills\aschecked`), click
+   its yes button (for example **Yes, copy it**) or type `yes` and send; otherwise click its no button or type `no`. Wait for "AsChecked is
+   installed". To update AsChecked later, paste this message again in Auto mode: this page always names the newest
+   version.
+4. **Choose the mode.** Keep **Auto** (choose it under the message box if it shows anything else). Do not use Accept
+   edits or Bypass permissions.
+5. **Start the review:** type `/aschecked`, choose **aschecked** from the list and send. If it is not in the list, type
+   `/reload-skills`, send it and try again. AsChecked is meant only to read your files. If a box asks you to allow something else, or to approve a plan, choose **No**.
+6. **Answer the three questions.** If they come as cards, pick an answer (or **Other** and type skip), then **Next**,
+   and on the last one **Submit**; if as text, answer or type skip and send. If part of your app is not built yet, say
+   which part: AsChecked then lists the problems in that part separately.
+7. **Your report is ready.** If you want to keep it, copy it into a text file outside your project's folder. Then pass
+   it to your AI builder to fix what it found: each problem comes with a message ready to paste.
 
-To update it later, paste the message from this page again: it always names the newest version.
+## In a terminal
 
-## Run a review
-
-1. **Open a terminal in your project's folder.** On Windows, right-click inside the folder and choose Open in
-   Terminal. On a Mac, right-click the folder in Finder and choose Services, then New Terminal at Folder.
-2. **Choose the version.** For your finished app, type `git checkout main` (or `git checkout master`, if that is its
-   name) and press Enter. For work still on another branch, type `git checkout` and that branch's name, and press
-   Enter. Not using git? Go on.
-3. **Check your instruction files.** Look in your project's folder for files like `CLAUDE.md`, `AGENTS.md` or
-   `.cursorrules` (a Mac hides names that start with a dot: press Cmd+Shift+period in Finder). Your AI tool reads them
-   by itself. If you did not write one, read it: text telling an AI how to review your project, or to say it is fine,
-   is a warning sign. AsChecked reports such text, but it cannot stop your tool from loading the file. If there are
-   none, go on.
-4. **Start Claude Code.** Type `claude --model fable --effort medium` and press Enter. Without Claude Fable 5.2 in your
-   plan, type `claude --model opus --effort medium` instead. If it asks whether you trust this folder, choose
-   **Yes**.
-5. **Switch on plan mode.** Press Shift+Tab until the bottom of the screen shows plan mode. Do not start the review in
-   auto-accept or bypass-permissions mode.
-6. **Start the review in plan mode:** type `/aschecked` and press Enter.
-7. **Answer the three questions**, or say "skip". If part of your app is not built yet, say which part:
-   AsChecked then lists the problems in that part separately.
-8. **Approve only reading.** Claude Code may ask before AsChecked runs a command. Choose the plain **Yes**, not
-   "don't ask again", if it only reads (looks, lists or searches); otherwise choose **No**.
-9. **Keep planning.** If Claude Code asks whether to approve a plan, choose to keep planning: the report is the
-   answer, and approving would let it start changing your project.
-10. **Save the report.** Select it with the mouse and copy it (Ctrl+Shift+C or right-click and Copy; Cmd+C on a
-    Mac), then paste it into a text file outside your project's folder.
-11. **Fix what it found.** Paste each "Paste to your AI builder" message into your AI builder: Lovable, Bolt, Cursor,
-    or Claude Code started again in your project without plan mode.
+Using Claude Code in a terminal? [Follow these steps](docs/terminal.md).
 
 ## No Claude Code? Use a claude.ai chat
 
@@ -109,17 +93,43 @@ You need a claude.ai account.
 6. **Save the report** that appears in the chat into a text file, then paste each "Paste to your AI builder" message
    into your AI builder.
 
-Our tests ran in Claude Code; a chat is not yet proven to reach the same results.
+Our tests ran in Claude Code and other coding tools; a chat is not yet proven to reach the same results.
+
+## Not using Claude? Other AI tools
+
+AsChecked can also run in other AI tools, but we have not fully tested them or every model they offer: we tried five of
+them (not Cline or the chat apps) and ran two, Codex and Antigravity, in our full test; none is proven yet. In our tests with Claude, the strongest models did best and weaker ones missed serious
+problems, so choose the strongest model your tool offers.
+
+For a tool that says "copy the folder", first download
+[the AsChecked zip](https://github.com/hevelius-ai/aschecked/archive/refs/tags/v1.0.0.zip), unpack it and copy its
+`skills/aschecked` folder into your project as the folder named.
+
+| Tool | How to install and run it |
+|---|---|
+| Cursor | Copy the folder to `.agents/skills/aschecked`. Start Cursor's agent in **Ask** mode (`agent --mode ask`) and type `/aschecked`. |
+| Codex (GPT models) | Copy the folder to `.agents/skills/aschecked`. In your project's folder, start `codex --sandbox read-only` and type `$aschecked`. |
+| Antigravity (Google) | Copy the folder to `.agents/skills/aschecked`. Start it in plan mode and type `/aschecked`. |
+| Cline | Copy the folder to `.claude/skills/aschecked` in your project and use Cline's plan mode (not tried). |
+| Lovable | In Account settings, open Personal skills; in the menu beside **Add skill** choose **Import skills**, then GitHub, and paste `https://github.com/hevelius-ai/aschecked/tree/main/skills/aschecked`. In a project, switch to **Chat** mode, type `/aschecked`, choose it and send "Run the aschecked skill on this project." |
+| Bolt | Open the project name menu, then **Skills**, **Add skill**, **From GitHub**, and enter `https://github.com/hevelius-ai/aschecked`. Switch to **Plan** mode, type `/aschecked`, choose it and send "Run the aschecked skill on this project." |
+| ChatGPT, Gemini or another chat | Upload `paste/aschecked-prompt.md` and your project's zip, and ask it to run the AsChecked review in the prompt file on the project. |
+
+In every tool, use its plan, ask or read-only mode, and allow only commands that read. More on each tool:
+[Other tools](docs/other-tools.md).
 
 ## More
 
 - [How we tested it](docs/how-we-tested.md).
 - [Other ways to install, update or remove it](docs/install-options.md).
 - [What read-only covers, and where it stops](docs/git-safety.md).
-- [Other AI tools](docs/other-tools.md) such as Codex, Cursor, Lovable or Bolt: packaged for, not yet proven; of the
-  five we tried, most fell short.
+- [Install and run in a terminal](docs/terminal.md).
+- [Other AI tools in detail](docs/other-tools.md), with how each did in our tries: most fell short.
 
 ## Licence
+
+AsChecked is not a security tool. It gives no score, rating or certificate, and its reports come with no warranty,
+as the licence says.
 
 (c) 2026 Hevelius AI Group LLC. The method text (`skills/`, `paste/`, `docs/` and this README) is licensed under CC BY
 4.0 ([LICENSE](LICENSE)); the join script, tests and configuration under MIT ([LICENSE-CODE](LICENSE-CODE)).

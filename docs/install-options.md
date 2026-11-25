@@ -9,11 +9,12 @@ newest version.
 
 ```
 Install the AsChecked review skill for me. Download
-https://github.com/hevelius-ai/aschecked/archive/refs/tags/v1.0.0.zip into this folder and unpack it here. Read
-the files in its skills/aschecked folder and tell me in two sentences what they do. Then tell me what you will copy
-and where, and wait for my yes. After my yes, copy that folder to .claude/skills/aschecked in my home folder,
-replacing any older copy, and delete what you downloaded and unpacked. Change nothing else. Finally, check that
-.claude/skills/aschecked/SKILL.md is in my home folder and say "AsChecked is installed".
+https://github.com/hevelius-ai/aschecked/archive/refs/tags/v1.0.0.zip into a new temporary folder outside this
+project and unpack it there. Read the files in its skills/aschecked folder and tell me in two sentences what they
+do. Then tell me what you will copy and where, and wait for my yes. After my yes, copy that folder to
+.claude/skills/aschecked in my home folder, replacing any older copy, and delete what you downloaded and unpacked.
+Change nothing else. Finally, check that .claude/skills/aschecked/SKILL.md is in my home folder and say
+"AsChecked is installed".
 ```
 
 We tried this once on Windows 11, before the release, with the branch's download address. The README's Mac

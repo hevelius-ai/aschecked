@@ -2,9 +2,8 @@
 
 Back to the [README](../README.md).
 
-AsChecked is packaged for, not yet proven in, these tools. In November 2026 we tried it once in five of them (Codex and Cursor also ran in our sandbox test, see
-[how we tested](how-we-tested.md)), on
-our own small test projects. A tool worked when its report met all our report checks (every required part, and
+AsChecked is packaged for, not yet proven in, these tools. In November 2026 we tried it in five of them, on our own small test projects; Codex and Cursor also ran in
+our sandbox test, and Codex and Antigravity in our full test (see [how we tested](how-we-tested.md)). A tool worked when its report met all our report checks (every required part, and
 evidence that matches the files), the review changed no file and it found the most serious known problem. One try
 is not proof.
 
@@ -13,7 +12,10 @@ is not proof.
   `codex --sandbox read-only` in your project's folder, type `$aschecked` and approve each command that only reads.
   On Windows, Codex first asks how to set up its sandbox (we chose the non-admin sandbox); before that setup, our
   unattended run could not run any command. Tried, not working: both reviews (one on each project) found the most
-  serious problem, but one cited a line two lines away from the text it described. Not yet proven.
+  serious problem, but one cited a line two lines away from the text it described. In our full test (24 sample
+  apps, 110 reviews with GPT-6-Luna at medium effort in its read-only sandbox), 72 of 110 reviews were complete
+  and correct, against 112 of 120 for Claude Fable 5.2 at medium effort in Claude Code; it put the most serious
+  problem first in 74 of 87 reviews of apps with one. Not yet proven.
 - **Cursor** (command line, free plan, Auto model, on two test projects): copy the folder into
   `.agents/skills/aschecked`, start Cursor's agent in **Ask** mode (`agent --mode ask`) and type `/aschecked`. In plan
   mode it only wrote a plan and offered to build it. Tried, not working: both reviews (one on each project) found the
@@ -21,7 +23,9 @@ is not proof.
 - **Antigravity** (command line; tried with Claude Opus 4.6 Thinking, the strongest model it offered, on one test
   project): copy the folder into `.agents/skills/aschecked`, start it in plan mode, type `/aschecked` and approve each
   command that only reads; its unattended mode stops at the first command. Tried, not working: it found the most
-  serious problem but ranked it second. Not yet proven.
+  serious problem but ranked it second. In our full test (Antigravity CLI 1.5.16, Gemini 4 Hydrogen at medium
+  effort, in its default mode with its sandbox), 10 reviews ran before its weekly quota ran out: 9 of 10 were
+  complete and correct, too few to compare. Not yet proven.
 - **Devin Desktop, Kilo:** copy the folder into `.agents/skills/aschecked`. Not tried (each needs an install and a
   sign-in). Not yet proven. Use the tool's plan or read-only mode where it has one.
 - **Cline:** copy the folder into `.claude/skills/aschecked`, as for Claude Code. Not tried (needs an install and a
