@@ -990,7 +990,7 @@ def test_s7_53_the_plan_mode_file_write_is_named() -> None:
     for phrase in (
         "Neither mode can promise that nothing changes",
         "in one of 480 reviews (Claude Opus 5.5, plan mode), a command meant only to read wrote a small file into the "
-        "project; the fix comes in the next version",
+        "project; AsChecked now forbids such commands (a rule added after the test)",  # S7-57 A
         "in our test, Auto was as good as plan mode for both",
     ):
         assert phrase in how, phrase
@@ -998,7 +998,7 @@ def test_s7_53_the_plan_mode_file_write_is_named() -> None:
     for phrase in (
         "plan mode did not stop one shell command that wrote a file",
         "10-byte file named `0` into the project",
-        "comes in the next version (v1.1)",
+        "Since the test, AsChecked's rules forbid commands that send output to a file",  # S7-57 A
         "(how-we-tested.md#plan-mode-and-auto-mode)",
     ):
         assert phrase in notes, phrase

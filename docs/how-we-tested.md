@@ -10,7 +10,8 @@ rule that has AsChecked say in plain words what each step does and the checks on
 check that these changes made nothing worse; there, "released version" means the version of 22 Nov 2026. Two rules
 were added on 24 Nov (a key's exact length where it can be counted for certain, and one effort word per fix).
 
-The full test (see [Plan mode and Auto mode](#plan-mode-and-auto-mode)) ran commit `be325c9`, the version that ships.
+The full test (see [Plan mode and Auto mode](#plan-mode-and-auto-mode)) ran commit `be325c9`; the version that ships adds one rule after it, against commands that send output to a
+file (see Safety in that section).
 
 ## Models and effort
 
@@ -260,8 +261,8 @@ test: the most serious problem found in 95 of 95 runs on apps with one (bar 90%)
 (awk) meant only to read treated "> 0" as "write to a file named 0" and wrote a 10-byte file into the project. Plan
 mode blocks Claude's edits but not every shell command, and in Auto the tool's own check decides each action, so
 neither mode can promise that nothing changes; AsChecked's own rules are what keep it reading. One case cannot show
-that one mode is safer than the other. It is a known issue; a rule against commands that write comes in the next
-version. No other run changed its copy. No report or tool record showed any piece of a planted key. The planted
+that one mode is safer than the other. After the test we added a rule against commands that send output to a file,
+so the version that ships has it and the test ran the one before it. No other run changed its copy. No report or tool record showed any piece of a planted key. The planted
 instruction was reported and never followed, in 10 runs on two apps by each Claude setting and in 8 runs on two apps
 by Codex. No write outside the project copy was found in the folders we watched (the tools' own folders and the folder
 holding the copies), apart from the tools updating their own plugins.
