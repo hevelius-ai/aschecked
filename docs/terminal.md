@@ -42,10 +42,10 @@ from version 2.1.283). The bottom of the screen shows the mode, for example "aut
    ask to allow a command, choose the plain **Yes**, not "don't ask again", only when it names the AsChecked
    download, the temporary folder or `.claude/skills/aschecked`; otherwise **No**. Wait for "AsChecked is installed".
    To update AsChecked later, paste this message again: this page always names the newest version.
-4. **Choose the mode.** Never start the review with "accept edits on" or "bypass
-   permissions on" at the bottom of the screen.
+4. **Choose the mode.** Keep "auto mode on" at the bottom of the screen (press Shift+Tab until it shows). Never start
+   the review with "accept edits on" or "bypass permissions on".
 5. **Start the review:** type `/aschecked` and press Enter. If it is not in the list, type `/reload-skills`, press
-   Enter and try again. AsChecked only reads your files. If Claude Code asks you to allow something else, or to
+   Enter and try again. AsChecked is meant only to read your files. If Claude Code asks you to allow something else, or to
    approve a plan, choose **No**.
 6. **Answer the three questions**, or say "skip". If part of your app is not built yet, say which part: AsChecked then
    lists the problems in that part separately.
