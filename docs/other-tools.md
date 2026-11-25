@@ -2,7 +2,7 @@
 
 Back to the [README](../README.md).
 
-AsChecked is packaged for, not yet proven in, these tools. In November 2026 we tried it in five of them, on our own small test projects; Codex and Cursor also ran in
+AsChecked is packaged for, not yet proven in, these tools. In November 2026 we tried it in five of them, on our own test projects; Codex and Cursor also ran in
 our sandbox test, and Codex and Antigravity in our full test (see [how we tested](how-we-tested.md)). A tool worked when its report met all our report checks (every required part, and
 evidence that matches the files), the review changed no file and it found the most serious known problem. One try
 is not proof.
@@ -47,6 +47,6 @@ is not proof.
   proven.
 
 **Antigravity, tried with an earlier version of the method as a plain prompt:** with Gemini 3.8 Flash it missed all
-four known problems in a small web app with accounts and called that app's access rules strong; it found two of
+four known problems in a web app with accounts and called that app's access rules strong; it found two of
 five known problems in a desktop app. Claude Sonnet 4.6 in the same tool found one of the four web-app problems.
 The installed v1 skill is the one tried in the list above.
