@@ -22,13 +22,13 @@ is not proof.
   most serious problem, but one gave no effort for any fix. Not yet proven.
 - **Antigravity** (command line; tried with Claude Opus 4.6 Thinking, the strongest model it offered, on one test
   project): copy the folder into `.agents/skills/aschecked`, start it in plan mode, type `/aschecked` and approve each
-  command that only reads; its unattended mode stops at the first command. Tried, not working: it found the most
+  command that only reads; in that try, its unattended mode stops at the first command. Tried, not working: it found the most
   serious problem but ranked it second. In our full test (Antigravity CLI 1.5.16, Gemini 4 Hydrogen at medium
   effort, in its default mode with its sandbox), 10 reviews ran before its weekly quota ran out: 9 of 10 were
   complete and correct, too few to compare. Not yet proven.
 - **Devin Desktop, Kilo:** copy the folder into `.agents/skills/aschecked`. Not tried (each needs an install and a
   sign-in). Not yet proven. Use the tool's plan or read-only mode where it has one.
-- **Cline:** copy the folder into `.claude/skills/aschecked`, as for Claude Code. Not tried (needs an install and a
+- **Cline:** copy the folder into `.claude/skills/aschecked` in your project, and use Cline's plan mode. Not tried (needs an install and a
   sign-in). Not yet proven.
 - **Lovable:** in Account settings, open Personal skills, use the menu beside **Add skill** to choose **Import
   skills**, pick GitHub and paste `https://github.com/hevelius-ai/aschecked/tree/main/skills/aschecked`. Then, in a

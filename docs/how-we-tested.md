@@ -7,9 +7,10 @@ Back to the [README](../README.md).
 The benchmark below ran on the method as it was on 18 Nov 2026 (`skills/aschecked` at commit `2080d5a`), before the
 rule that has AsChecked say in plain words what each step does and the checks on cited lines and ranking (added 22 Nov
 2026). The sandbox test below ran on the released version, on the two versions before it and on the earlier one, to
-check that these changes made nothing worse.
+check that these changes made nothing worse; there, "released version" means the version of 22 Nov 2026. Two rules
+were added on 24 Nov (a key's exact length where it can be counted for certain, and one effort word per fix).
 
-The full test (see [Plan mode and Auto mode](#plan-mode-and-auto-mode)) ran commit `be325c9`.
+The full test (see [Plan mode and Auto mode](#plan-mode-and-auto-mode)) ran commit `be325c9`, the version that ships.
 
 ## Models and effort
 
@@ -202,7 +203,7 @@ evidence.
 
 **What we tested.** On 24 and 25 November 2026 (UTC), on one Windows machine, our full test ran AsChecked (commit
 `be325c9`) on 24 sample apps we built: 19 with planted problems and 5 built correctly; two of the 19 also hide an
-instruction aimed at AI reviewers. Each setting below reviewed every app five times, each run in its own copy of the
+instruction aimed at AI reviewers. Each setting below was set to review every app five times, each run in its own copy of the
 app, with nobody approving anything during a run. Tools: Claude Code 2.1.330; Codex CLI 0.170.0 in its read-only
 sandbox; Antigravity CLI 1.5.16 in its default mode with its sandbox. A program checked every copy for any file
 created, changed or deleted, and every report and tool record for any piece of a planted secret key.
@@ -220,18 +221,18 @@ whole they agreed on 93 of 96 reports.
 
 | Setting | Complete and correct | Most serious problem found and put first | All seven report checks | False alarms (runs on correct apps) | Safety failures |
 |---|---|---|---|---|---|
-| Claude Fable 5.2, medium, plan mode | 116 of 120 | 95 of 95 | 116 of 120 | 0 of 25 | 0 |
+| Claude Fable 5.2, medium, plan mode | 116 of 120 (0 to 100%) | 95 of 95 | 116 of 120 | 0 of 25 | 0 |
 | **Claude Fable 5.2, medium, Auto (recommended)** | **112 of 120** (88.4 to 97.9%) | 95 of 95 | 112 of 120 | 0 of 25 | 0 |
 | Claude Opus 5.5, medium, plan mode | 104 of 120 (80.3 to 92.5%) | 93 of 95 | 105 of 120 | 0 of 25 | 1 |
 | Claude Opus 5.5, medium, Auto | 108 of 120 (82.7 to 95.8%) | 94 of 95 | 108 of 120 | 0 of 25 | 0 |
 | Claude Fable 5.2, low, Auto | 113 of 120 (72.7 to 99.7%) | 94 of 95 | 113 of 120 | 0 of 25 | 0 |
 | Claude Sonnet 5.5, medium, Auto | 113 of 120 (74.4 to 99.5%) | 93 of 95 | 115 of 120 | 2 of 25 | 0 |
 | Codex, GPT-6-Luna, medium, read-only | 72 of 110 (47.5 to 80.5%) | 74 of 87 | 76 of 110 | 1 of 23 | 0 |
-| Antigravity, Gemini 4 Hydrogen, medium | 9 of 10 | 9 of 9 | 9 of 10 | 0 of 1 | 0 |
+| Antigravity, Gemini 4 Hydrogen, medium | 9 of 10 (0 to 100%) | 9 of 9 | 9 of 10 | 0 of 1 | 0 |
 
 In brackets: 95% ranges, from a bootstrap over the 24 apps (bootstrap-t, 10,000 draws, widened by 1.17, the factor
 our coverage test chose before the first run). When nearly every app passes every run, this method cannot say how far
-the rate could move and gives a range of 0 to 100; we leave those out. Comparisons between settings use the same
+the rate could move and gives a range of 0 to 100: read those as no range. Comparisons between settings use the same
 method on the difference, worked out on the same apps, and the answers below rest only on those. Two Claude Opus 5.5
 runs (one per mode) ended without a report and count as not complete and correct. Most report-check misses were
 "evidence that holds": a cited line just off, or a claim the cited code contradicts.
@@ -241,9 +242,9 @@ runs (one per mode) ended without a report and count as not complete and correct
 medium effort: -3.3 points (range -9.3 to +2.2), so Auto could be up to 9.3 points behind. Claude Opus 5.5 at medium
 effort: +3.3 (range -3.1 to +9.7).
 
-**Which Claude setting is best?** In our test, no clear best: the sample apps did not separate the settings. Claude
-Fable 5.2 at low effort and Claude Sonnet 5.5 at medium effort tied at 113 of 120; Claude Fable 5.2 at medium effort
-was level with them; for Claude Opus 5.5 at medium effort the test could not show that (it could be up to 13.1 points
+**Which Claude setting is best in Auto?** In our test, no clear best: the sample apps did not separate the settings.
+Among the four Auto settings, Claude Fable 5.2 at low effort and Claude Sonnet 5.5 at medium effort tied at 113 of 120; Claude Fable 5.2 at medium effort
+in Auto was level with them; for Claude Opus 5.5 at medium effort in Auto the test could not show that (it could be up to 13.1 points
 behind). So the README keeps the order of our benchmark on real projects, with Claude Fable 5.2 at medium effort first.
 
 **Other tools.** In our test, Claude Fable 5.2 at medium effort in Auto did better than Codex with GPT-6-Luna at medium
@@ -270,7 +271,8 @@ of 80; Claude Opus 5.5 medium, plan mode 68 of 80; Auto 72 of 80; Claude Fable 5
 5.5 medium, Auto 77 of 80; Codex 46 of 73; Antigravity 7 of 7.
 
 **Runs not counted.** Of 960 planned runs, 120 were not made or not counted: 10 Codex runs (its plan limit, until 21
-December) and 110 Antigravity runs (its weekly quota). We report what ran rather than wait. One Claude run that read a
+December) and 110 Antigravity runs (its weekly quota). We report what ran rather than wait. Cursor was left out: its free plan's limit was reached before the test. One
+Claude run that read a
 file outside its copy was set aside and run again.
 
 **What this test cannot show:** these are sample apps we built, not real projects, and planted problems are easier to
