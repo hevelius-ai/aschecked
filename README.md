@@ -24,7 +24,8 @@ message to paste to your AI builder; then up to five smaller ones, one line each
   Code's Auto mode and in its plan mode. We tested both on 24 sample apps with Claude Fable 5.2 and Claude Opus 5.5:
   in our test, Auto was as good as plan mode for both (by a rule we fixed beforehand: no more than 10 points behind).
   Neither mode can promise that nothing changes: in one of 480 reviews (Claude Opus 5.5, plan mode), a command meant
-  only to read wrote a small file into the project; the fix comes in the next version. Details:
+  only to read wrote a small file into the project; AsChecked now forbids such commands (a rule added after the test).
+  Details:
   [our test results](docs/how-we-tested.md#plan-mode-and-auto-mode).
 - The AI reads your project's files, including any keys written into them. The
   report never shows a key's value: it gives a key's kind, file, line and, if certain, length.

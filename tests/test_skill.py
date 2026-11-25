@@ -74,6 +74,18 @@ def test_secret_search_always_uses_H() -> None:
                 assert "H" in flags, f"grep with -n but without -H: {command}"
 
 
+def test_k3_commands_never_write_a_file() -> None:
+    # K3 (S7-57): in the full test an improvised awk `print ..., x>0` wrote a file named 0 into the project.
+    limits = flat(section("Hard limits"))
+    for phrase in ("Never send output to a file", "`>`", "`>>`", "`tee`", "in awk put every comparison in brackets"):
+        assert phrase in limits, phrase
+    assert "writes a file named `0`" in limits
+    # The skill's own awk command prints no bare comparison: every `>` in it sits inside brackets or a regex.
+    for command in re.findall(r"`(awk [^`]*)`", skill_text()):
+        program = command.split("'")[1] if "'" in command else command
+        assert not re.search(r"print[^;}]*[^(\s]\s*>\s*[\w\"]", program), f"bare comparison after print: {command}"
+
+
 def test_masked_read_line() -> None:
     limits = flat(section("Hard limits"))
     assert "values masked" in limits

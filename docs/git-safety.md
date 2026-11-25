@@ -11,8 +11,8 @@ really block changes is not yet proven; where nothing blocks them, the limits ar
 
 In our full test (November 2026), plan mode did not stop one shell command that wrote a file: in one of 120
 plan-mode reviews with Claude Opus 5.5 at medium effort, a text-processing command (awk) meant only to read wrote a
-10-byte file named `0` into the project. Plan mode blocks Claude's edits but not every shell command. A rule in
-AsChecked against commands that write comes in the next version (v1.1). Details:
+10-byte file named `0` into the project. Plan mode blocks Claude's edits but not every shell command. Since the
+test, AsChecked's rules forbid commands that send output to a file, and the awk form that did it. Details:
 [how we tested](how-we-tested.md#plan-mode-and-auto-mode).
 
 **Git settings:** a project's own git settings can make git run a program. AsChecked's git commands switch off the
