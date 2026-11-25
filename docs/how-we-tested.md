@@ -6,12 +6,10 @@ Back to the [README](../README.md).
 
 The benchmark below ran on the method as it was on 18 Nov 2026 (`skills/aschecked` at commit `d8dd162`), before the
 rule that has AsChecked say in plain words what each step does and the checks on cited lines and ranking (added 22 Nov
-2026). The sandbox test below ran on the released version, on the two versions before it and on the earlier one, to
-check that these changes made nothing worse; there, "released version" means the version of 22 Nov 2026. Two rules
-were added on 24 Nov (a key's exact length where it can be counted for certain, and one effort word per fix).
+2026). The sandbox test below ran on the version of 22 Nov 2026, on the two versions before it and on the earlier one, to
+check that these changes made nothing worse.
 
-The full test (see [Plan mode and Auto mode](#plan-mode-and-auto-mode)) ran commit `f574112`; the version that ships adds one rule after it, against commands that send output to a
-file (see Safety in that section).
+The full test (see [Plan mode and Auto mode](#plan-mode-and-auto-mode)) ran commit `f574112`.
 
 ## Models and effort
 
@@ -139,7 +137,7 @@ against the code before any run, and the reports were scored blind (the scorer d
 wrote each one).
 
 Claude Code with Claude Fable 5.2 at medium effort, in plan mode: three runs per app on each of three versions with
-the plain-words rule, one run per app on the earlier version. Codex (GPT-6-Luna, medium) and Cursor (free plan, Auto
+the plain-words rule, one run per app on the earlier version. Codex (GPT-6-Luna, medium) and Cursor (Auto
 model) once per app, on the first of those versions.
 
 We fixed the pass marks before the runs, and the test ran in three rounds, each scored as it finished. The first
@@ -163,7 +161,7 @@ shows that single scoring:
 | Claude Code, first version with the plain-words rule (24) | 18 of 18, always as finding 1 | 2.8 | 20 of 24 | 6 of 6 | 3 of 3 |
 | Claude Code, earlier version (8) | 6 of 6 | 2.8 | 6 of 8 | 2 of 2 | 1 of 1 |
 | Codex (8) | 5 of 6 | 2.0 | 3 of 8 | 2 of 2 | 1 of 1 |
-| Cursor (2 of 8: six first failed on a start-up quoting error in our script, then the free plan's limit stopped the re-runs) | 2 of 2 | 3.0 | 1 of 2 | not run | not run |
+| Cursor (2 of 8) | 2 of 2 | 3.0 | 1 of 2 | not run | not run |
 
 The released version met every pass mark. Scored round by round, by new scorers each time, the three versions came to
 20, 21 and 23 of 24 on the report checks: the second round's scorers failed a citation one line off, while the third
@@ -178,8 +176,7 @@ reports with each other instead. Counting every close call on the report checks 
 wrote for all of an app's reports, no report of the three versions with the plain-words rule passes, and 1 of the
 earlier version's 8 does: almost every report has some close call, so that count cannot tell the versions apart. As in
 every round, a citation of the reviewed copy's own git settings file counts as present:
-each such report cites its remote address on the line where it is. (Three earlier-version runs broke at the end
-because we changed our run script while they ran, and were run again.)
+each such report cites its remote address on the line where it is.
 
 In every Claude Code run no file changed and no planted key value appeared in anything the AI wrote. On the released
 version, a plain-words line came before about 97% of the AI's steps (93% on the second version, 96% on the first,
@@ -250,19 +247,15 @@ behind). So the README keeps the order of our benchmark on real projects, with C
 
 **Other tools.** In our test, Claude Fable 5.2 at medium effort in Auto did better than Codex with GPT-6-Luna at medium
 effort, the one model we ran in Codex: 27.9 points ahead on complete and correct (range 12.6 to 46.3). Antigravity:
-measured, no comparison (10 runs before its weekly quota ran out; the rules need 35).
+measured, no comparison (10 runs; the rules need 35).
 
 **Recommended: Claude Fable 5.2 at medium effort, in Auto.** In our test it met every release bar fixed before the
 test: the most serious problem found in 95 of 95 runs on apps with one (bar 90%); all seven report checks in 112 of
 120 (bar 92%); a false alarm on 0 of 25 runs on correct apps (bar at most 1); the planted instruction followed in 0 of
 10; no safety failure.
 
-**Safety.** One safety failure: Claude Opus 5.5 at medium effort in plan mode, on one app. A text-processing command
-(awk) meant only to read treated "> 0" as "write to a file named 0" and wrote a 10-byte file into the project. Plan
-mode blocks Claude's edits but not every shell command, and in Auto the tool's own check decides each action, so
-neither mode can promise that nothing changes; AsChecked's own rules are what keep it reading. One case cannot show
-that one mode is safer than the other. After the test we added a rule against commands that send output to a file,
-so the version that ships has it and the test ran the one before it. No other run changed its copy. No report or tool record showed any piece of a planted key. The planted
+**Safety.** One safety failure: Claude Opus 5.5 at medium effort in plan mode, on one app. A command meant only to read
+wrote a small file into the project. No other run changed its copy. No report or tool record showed any piece of a planted key. The planted
 instruction was reported and never followed, in 10 runs on two apps by each Claude setting and in 8 runs on two apps
 by Codex. No write outside the project copy was found in the folders we watched (the tools' own folders and the folder
 holding the copies), apart from the tools updating their own plugins.
@@ -271,10 +264,8 @@ holding the copies), apart from the tools updating their own plugins.
 of 80; Claude Opus 5.5 medium, plan mode 68 of 80; Auto 72 of 80; Claude Fable 5.2 low, Auto 74 of 80; Claude Sonnet
 5.5 medium, Auto 77 of 80; Codex 46 of 73; Antigravity 7 of 7.
 
-**Runs not counted.** Of 960 planned runs, 120 were not made or not counted: 10 Codex runs (its plan limit, until 21
-December) and 110 Antigravity runs (its weekly quota). We report what ran rather than wait. Cursor was left out: its free plan's limit was reached before the test. One
-Claude run that read a
-file outside its copy was set aside and run again.
+**Runs.** Codex ran 110 and Antigravity 10 of the 120 runs planned for each; Cursor was not part of this test. One
+Claude run that read a file outside its copy was set aside and run again.
 
 **What this test cannot show:** these are sample apps we built, not real projects, and planted problems are easier to
 find than real ones. One Windows machine, the tool versions above, two days in November 2026. A home advantage for

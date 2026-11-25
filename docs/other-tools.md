@@ -16,7 +16,7 @@ is not proof.
   apps, 110 reviews with GPT-6-Luna at medium effort in its read-only sandbox), 72 of 110 reviews were complete
   and correct, against 112 of 120 for Claude Fable 5.2 at medium effort in Claude Code; it put the most serious
   problem first in 74 of 87 reviews of apps with one. Not yet proven.
-- **Cursor** (command line, free plan, Auto model, on two test projects): copy the folder into
+- **Cursor** (command line, Auto model, on two test projects): copy the folder into
   `.agents/skills/aschecked`, start Cursor's agent in **Ask** mode (`agent --mode ask`) and type `/aschecked`. In plan
   mode it only wrote a plan and offered to build it. Tried, not working: both reviews (one on each project) found the
   most serious problem, but one gave no effort for any fix. Not yet proven.
@@ -24,12 +24,10 @@ is not proof.
   project): copy the folder into `.agents/skills/aschecked`, start it in plan mode, type `/aschecked` and approve each
   command that only reads; in that try, its unattended mode stops at the first command. Tried, not working: it found the most
   serious problem but ranked it second. In our full test (Antigravity CLI 1.5.16, Gemini 4 Hydrogen at medium
-  effort, in its default mode with its sandbox), 10 reviews ran before its weekly quota ran out: 9 of 10 were
+  effort, in its default mode with its sandbox), 10 reviews ran: 9 of 10 were
   complete and correct, too few to compare. Not yet proven.
-- **Devin Desktop, Kilo:** copy the folder into `.agents/skills/aschecked`. Not tried (each needs an install and a
-  sign-in). Not yet proven. Use the tool's plan or read-only mode where it has one.
-- **Cline:** copy the folder into `.claude/skills/aschecked` in your project, and use Cline's plan mode. Not tried (needs an install and a
-  sign-in). Not yet proven.
+- **Devin Desktop, Kilo:** copy the folder into `.agents/skills/aschecked`. Not tried. Not yet proven. Use the tool's plan or read-only mode where it has one.
+- **Cline:** copy the folder into `.claude/skills/aschecked` in your project, and use Cline's plan mode. Not tried. Not yet proven.
 - **Lovable:** in Account settings, open Personal skills, use the menu beside **Add skill** to choose **Import
   skills**, pick GitHub and paste `https://github.com/hevelius-ai/aschecked/tree/main/skills/aschecked`. Then, in a
   project, switch to **Chat** mode, type `/aschecked`, choose it from the list and send "Run the aschecked skill on
@@ -43,7 +41,7 @@ is not proof.
   report's closing lines. Bolt keeps the skill inside your project, so the review reported the skill's own
   instructions as project text. Bolt then added a new version to the project's history; whether that changed a file
   was not checked. Not yet proven.
-- **Replit:** not tried (needs a paid plan): Replit documents skills and its Plan mode for paid plans only. Not yet
+- **Replit:** not tried. Replit documents skills and its Plan mode for paid plans only. Not yet
   proven. On any plan, you can download your project from Replit and use "No Claude Code? Use a claude.ai chat" in the README.
 - **Anything else:** paste [`paste/aschecked-prompt.md`](../paste/aschecked-prompt.md) and give it your code. Not yet
   proven.

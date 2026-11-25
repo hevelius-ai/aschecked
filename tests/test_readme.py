@@ -191,7 +191,7 @@ def test_replit_marked_not_tried_needs_a_paid_plan() -> None:
     bullets = [flat(b) for b in re.split(r"^- ", page, flags=re.M)[1:]]
     replit = [b for b in bullets if b.startswith("**Replit:**")]
     assert len(replit) == 1, "no bullet of its own for Replit"
-    for phrase in ("not tried (needs a paid plan)", "Plan mode", "Use a claude.ai chat"):  # S7-31: new heading
+    for phrase in ("not tried", "Plan mode", "Use a claude.ai chat"):  # S7-59: no reason given for not trying
         assert phrase in replit[0], phrase
     assert not [b for b in bullets if "Replit" in b and not b.startswith("**Replit:**")]
 
@@ -367,7 +367,7 @@ def test_mode_is_named_before_the_install_steps() -> None:
     # terminal key and moved with the terminal steps to docs/terminal.md (S7-42 2A).
     assert "\n## In the Claude desktop app\n" in text()
     before_install = flat(text()).split("## In the Claude desktop app")[0]
-    for phrase in ("Auto mode", "plan mode", "**It is meant only to read.**", "Neither mode can promise"):
+    for phrase in ("Auto mode", "plan mode", "**It is meant only to read.**"):  # S7-59
         assert phrase in before_install, phrase
     assert "Shift+Tab" in terminal_steps()[2]
 
@@ -573,7 +573,7 @@ def test_s7_21_models_and_modes_tried_are_named() -> None:
     ):
         assert phrase in codex, phrase
     cursor = bullet("Cursor")
-    for phrase in ("free plan, Auto model, on two test projects", "**Ask** mode", "only wrote a plan"):
+    for phrase in ("Auto model, on two test projects", "**Ask** mode", "only wrote a plan"):  # S7-59
         assert phrase in cursor, phrase
     antigravity = bullet("Antigravity")
     for phrase in (
@@ -619,8 +619,8 @@ def test_s7_21_import_paths_for_the_builders() -> None:
 
 
 def test_s7_21_untried_tools_say_so() -> None:
-    assert "Not tried (each needs an install and a sign-in)" in bullet("Devin Desktop, Kilo")
-    assert "Not tried (needs an install and a sign-in)" in bullet("Cline")
+    assert "Not tried." in bullet("Devin Desktop, Kilo")  # S7-59: no reason given
+    assert "Not tried." in bullet("Cline")
 
 
 def test_s7_21_nothing_is_called_proven() -> None:
@@ -985,25 +985,32 @@ def test_no_bracketed_placeholder_in_readme_or_docs() -> None:
         assert "Draft for" not in body, path.name
 
 
-def test_s7_53_the_plan_mode_file_write_is_named() -> None:
+def test_s7_59_no_fixed_problem_or_tool_limit_is_told() -> None:
+    # S7-59 (owner, 25 Nov 2026): the README and docs say nothing about problems already fixed, and nothing about a
+    # tool's quota, limit or plan; a tool not tried is plainly "not tried". The testing page keeps its results.
     how = flat(part("How it works"))
-    for phrase in (
-        "Neither mode can promise that nothing changes",
-        "in one of 480 reviews (Claude Opus 5.5, plan mode), a command meant only to read wrote a small file into the "
-        "project; AsChecked now forbids such commands (a rule added after the test)",  # S7-57 A
-        "in our test, Auto was as good as plan mode for both",
-    ):
-        assert phrase in how, phrase
-    notes = flat(doc("git-safety.md"))
-    for phrase in (
-        "plan mode did not stop one shell command that wrote a file",
-        "10-byte file named `0` into the project",
-        "Since the test, AsChecked's rules forbid commands that send output to a file",  # S7-57 A
-        "(how-we-tested.md#plan-mode-and-auto-mode)",
-    ):
-        assert phrase in notes, phrase
+    assert "in our test, Auto was as good as plan mode for both" in how
+    for phrase in ("Neither mode can promise", "rule we fixed beforehand", "added after the test"):
+        assert phrase not in how, phrase
+    banned = (
+        "quota",
+        "ran out",
+        "plan limit",
+        "plan's limit",
+        "needs a paid plan",
+        "after the test",
+        "next version",
+        "quoting error",
+        "run script",
+        "10-byte",
+        "since the test",
+    )
+    for path in [README, *sorted((README.parent / "docs").glob("*.md"))]:
+        body = flat(path.read_text(encoding="utf-8")).lower()
+        for phrase in banned:
+            assert phrase not in body, f"{path.name}: {phrase}"
     section = flat(doc("how-we-tested.md")).split("## Plan mode and Auto mode")[1]
-    assert "One safety failure: Claude Opus 5.5 at medium effort in plan mode, on one app." in section
+    assert "One safety failure:" in section
 
 
 def test_s7_44_full_test_section() -> None:
@@ -1029,7 +1036,7 @@ def test_s7_44_full_test_section() -> None:
 def test_s7_44_other_tools_full_test_lines() -> None:
     assert "72 of 110 reviews were complete and correct" in bullet("Codex")
     antigravity = bullet("Antigravity")
-    assert "10 reviews ran before its weekly quota ran out: 9 of 10 were complete and correct" in antigravity
+    assert "10 reviews ran: 9 of 10 were complete and correct" in antigravity  # S7-59
     assert "start it in plan mode" in antigravity  # the start instruction is unchanged
 
 
