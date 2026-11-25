@@ -543,7 +543,7 @@ def test_s7_21_how_the_tools_were_tried_is_stated() -> None:
         # the full test, so the opening no longer says "tried it once".
         "we tried it in five of them",
         "Codex and Antigravity in our full test",
-        "our own small test projects",
+        "our own test projects",  # S7-60
         "met all our report checks (every required part, and evidence that matches the files)",
         "changed no file",
         "most serious known problem",
@@ -696,8 +696,7 @@ def test_s7_26_sandbox_results_and_limits_are_stated() -> None:
         "20 of 24",
         "at least 22 of 24",
         "We fixed the pass marks before the runs",
-        "planted problems are easier to find than real ones",
-        "we wrote the apps ourselves",
+        "we wrote the apps and planted the problems ourselves",  # S7-60
         "With their own checks",
         "Without",
         "the benchmark above remain the main evidence",
@@ -985,6 +984,22 @@ def test_no_bracketed_placeholder_in_readme_or_docs() -> None:
         assert "Draft for" not in body, path.name
 
 
+def test_s7_60_facts_without_downplaying() -> None:
+    # S7-60 (owner, 25 Nov 2026): the pages state facts and limits plainly, without words that belittle the testing.
+    for path in [README, *sorted((README.parent / "docs").glob("*.md"))]:
+        body = flat(path.read_text(encoding="utf-8")).lower()
+        for phrase in (
+            "small app",
+            "small made-up",
+            "small test project",
+            "small web app",
+            "eight small apps",
+            "easier to find than real ones",
+            "small file",
+        ):
+            assert phrase not in body, f"{path.name}: {phrase}"
+
+
 def test_s7_59_no_fixed_problem_or_tool_limit_is_told() -> None:
     # S7-59 (owner, 25 Nov 2026): the README and docs say nothing about problems already fixed, and nothing about a
     # tool's quota, limit or plan; a tool not tried is plainly "not tried". The testing page keeps its results.
@@ -1026,7 +1041,7 @@ def test_s7_44_full_test_section() -> None:
         "| Codex, GPT-6-Luna, medium, read-only | 72 of 110 (47.5 to 80.5%) |",
         "**Is Auto as good as plan mode?**",
         "**Recommended: Claude Fable 5.2 at medium effort, in Auto.**",
-        "**What this test cannot show:**",
+        "**Limits:**",  # S7-60
     ):
         assert phrase in section, phrase
     version = flat(page.split("## Which version was tested")[1].split("\n## ")[0])
