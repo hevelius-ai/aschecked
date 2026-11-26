@@ -222,9 +222,7 @@ def results_raw() -> str:
 
 
 def test_s7_19_best_setting_is_named_first_and_in_the_start_command() -> None:
-    # S7-31 (test table): the banner says "did best" and the table's first row says "(best)".
-    screen = first_screen()
-    assert "Claude Fable 5.2 at medium effort did best" in screen
+    # S7-31 (test table): the table's first row says "(best)". S7-63: the banner that said "did best" is gone.
     # S7-36 and S7-42 2A (owner, 23 and 24 Nov 2026): the README names the settings for the desktop app; the
     # settings table and the start commands moved to docs/terminal.md.
     assert "**Claude Fable 5.2 at medium effort (best)**" in flat(text())
@@ -675,8 +673,9 @@ def test_s7_25_safety_lines_stay_in_the_readme() -> None:
     for phrase in ("warning sign", "cannot stop your tool from loading such a file"):
         assert phrase in someone_else, phrase
     assert 'Never start the review with "accept edits on" or "bypass permissions on"' in terminal_steps()[3]
-    # S7-61: the owner's sentence replaces "never tells you your app is 100% safe"; the banner keeps the no-claim line.
-    assert "it cannot confirm that anything is secure" in body
+    # S7-61: the owner's sentence replaces "never tells you your app is 100% safe"; S7-63: no banner, so the licence
+    # part keeps the no-claim line.
+    assert "AsChecked is not a security tool." in body
 
 
 def test_s7_25_links_in_the_docs_pages_resolve() -> None:
