@@ -122,7 +122,7 @@ In every tool, use its plan, ask or read-only mode, and allow only commands that
 - [Other ways to install, update or remove it](docs/install-options.md).
 - [What read-only covers, and where it stops](docs/git-safety.md).
 - [Install and run in a terminal](docs/terminal.md).
-- [Other AI tools in detail](docs/other-tools.md), with how each did in our tries: most fell short.
+- [Other AI tools in detail](docs/other-tools.md).
 
 ## Licence
 
