@@ -11,7 +11,7 @@ professional would fix first: data anyone can see, keys left in the open, promis
 doesn't keep. Use it with Claude Fable 5.2 or Claude Opus 5.5: weaker or free models missed serious problems in our
 tests.
 
-**What it is not:** it is not an audit, a certificate or a security scan, and it never tells you your app is 100% safe.
+**What it is not:** It is not an audit, a certificate or a security scan: it only lists the problems it found in what it checked.
 
 ## What you get
 

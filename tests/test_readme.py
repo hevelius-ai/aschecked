@@ -665,7 +665,9 @@ def test_s7_25_safety_lines_stay_in_the_readme() -> None:
         "plan mode",
         "approve a plan, choose **No**",
         "including any keys",
-        "not an audit",
+        # S7-61 (owner, 25 Nov 2026): the owner's own sentence for "What it is not"
+        "**What it is not:** It is not an audit, a certificate or a security scan: "
+        "it only lists the problems it found in what it checked.",
         "Do not use Accept edits or Bypass permissions",
     ):
         assert phrase in body, phrase
@@ -673,7 +675,8 @@ def test_s7_25_safety_lines_stay_in_the_readme() -> None:
     for phrase in ("warning sign", "cannot stop your tool from loading such a file"):
         assert phrase in someone_else, phrase
     assert 'Never start the review with "accept edits on" or "bypass permissions on"' in terminal_steps()[3]
-    assert re.search(r"never (says|tells you)[^.]*safe", body), "never says a project is safe"
+    # S7-61: the owner's sentence replaces "never tells you your app is 100% safe"; the banner keeps the no-claim line.
+    assert "it cannot confirm that anything is secure" in body
 
 
 def test_s7_25_links_in_the_docs_pages_resolve() -> None:
