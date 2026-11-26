@@ -7,6 +7,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 README = ROOT / "README.md"
+# S7-67 (owner, 26 Nov 2026): GitHub's own labels for downloading one file.
+GITHUB_DOWNLOAD = "click the **⋯** button at the top right of the file and choose **Download**"
 
 # The outside test projects are described by type, never by name or owner, in every public text. This check
 # knows them only by the SHA-256 of each name in lower case, so the repository never holds the names themselves.
@@ -521,7 +523,7 @@ def test_s7_20_says_where_to_save_the_report() -> None:
 def test_s7_20_says_how_to_download_the_prompt_file() -> None:
     # round 3 L2: the chat section ends where the other-tools section starts
     chat = between(flat(text()), "## No Claude Code? Use a claude.ai chat", "## Not using Claude? Other AI tools")
-    assert "**Download raw file**" in chat
+    assert GITHUB_DOWNLOAD in chat
 
 
 # Added for the owner's S7-21 B (19 to 22 Nov 2026): Codex, Cursor, Antigravity, Lovable and Bolt were each tried once
@@ -760,8 +762,8 @@ S7_31_HEADINGS = [
     "How it works",
     "What you need",
     "In the Claude Code desktop app",
+    "Project on GitHub? Use a cloud session",  # S7-67: after the desktop steps
     "In a terminal",
-    "Project on GitHub? Use a cloud session",  # S7-67
     "No Claude Code? Use a claude.ai chat",
     "Not using Claude? Other AI tools",
     "More",
@@ -1026,7 +1028,7 @@ def test_s7_67_cloud_session_route() -> None:
     assert len(steps) == 6, steps
     for i, phrases in enumerate(
         (
-            ("**Download the AsChecked prompt file.**", "(paste/aschecked-prompt.md)", "**Download raw file**"),
+            ("**Download the AsChecked prompt file.**", "(paste/aschecked-prompt.md)", GITHUB_DOWNLOAD),
             ("**Start a cloud session.**", "**Code** tab", "choose a cloud environment", "your GitHub repository"),
             (
                 "**Choose the model.**",
@@ -1137,7 +1139,7 @@ def test_s7_36_what_you_need_and_licence() -> None:
 
 CHAT_STEPS = [
     ("**Download your project as a zip.**", "**Download ZIP**", "choose it first"),
-    ("[`paste/aschecked-prompt.md`](paste/aschecked-prompt.md)", "**Download raw file**"),
+    ("[`paste/aschecked-prompt.md`](paste/aschecked-prompt.md)", GITHUB_DOWNLOAD),
     ("Claude Fable 5.2", "Claude Opus 5.5", "medium effort if offered"),
     ("**Upload both files**", '"Run the AsChecked review in the attached prompt file on the attached project."'),
     ("**Answer the three questions**", '"skip"', "not built yet", "separately"),

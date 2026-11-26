@@ -69,17 +69,13 @@ message to paste to your AI builder; then up to five smaller ones, one line each
 7. **Your report is ready.** If you want to keep it, copy it into a text file outside your project's folder. Then pass
    it to your AI builder to fix what it found: each problem comes with a message ready to paste.
 
-## In a terminal
-
-Using Claude Code in a terminal? [Follow these steps](docs/terminal.md).
-
 ## Project on GitHub? Use a cloud session
 
 Your project is on GitHub but not on your computer? Claude Code can review it in a cloud session. Nothing is
 installed: you attach the AsChecked prompt file.
 
-1. **Download the AsChecked prompt file.** Open [`paste/aschecked-prompt.md`](paste/aschecked-prompt.md) on GitHub
-   and click **Download raw file**.
+1. **Download the AsChecked prompt file.** Open [`paste/aschecked-prompt.md`](paste/aschecked-prompt.md) on GitHub,
+   click the **⋯** button at the top right of the file and choose **Download**.
 2. **Start a cloud session.** In the Claude Code desktop app, open the **Code** tab and start a new session. In the
    bar under the message box, choose a cloud environment (it shows a cloud icon), then your GitHub repository and the
    branch you want checked (for your finished app, usually main or master).
@@ -95,14 +91,18 @@ installed: you attach the AsChecked prompt file.
 In a cloud session AsChecked could not search your project's git history for keys; the report says so. We tried this
 once, on one GitHub project, with Claude Opus 5.5: [our test results](docs/how-we-tested.md#cloud-session-26-nov-2026).
 
+## In a terminal
+
+Using Claude Code in a terminal? [Follow these steps](docs/terminal.md).
+
 ## No Claude Code? Use a claude.ai chat
 
 You need a claude.ai account.
 
 1. **Download your project as a zip.** On GitHub: open your project, click **Code**, then **Download ZIP** (for a
    branch, choose it first). From Lovable, Bolt or Replit: use their download, or sync to GitHub first.
-2. **Download the AsChecked prompt file.** Open [`paste/aschecked-prompt.md`](paste/aschecked-prompt.md) on GitHub
-   and click **Download raw file**.
+2. **Download the AsChecked prompt file.** Open [`paste/aschecked-prompt.md`](paste/aschecked-prompt.md) on GitHub,
+   click the **⋯** button at the top right of the file and choose **Download**.
 3. **Start a new chat** at claude.ai with Claude Fable 5.2 (or Claude Opus 5.5), medium effort if offered.
 4. **Upload both files** and type: "Run the AsChecked review in the attached prompt file on the attached project."
 5. **Answer the three questions**, or say "skip". If part of your app is not built yet, say which part:
