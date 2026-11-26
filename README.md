@@ -1,9 +1,5 @@
 # AsChecked
 
-> **Version 1.** Tested in Claude Code, where Claude Fable 5.2 at medium effort did best
-> ([how we tested](docs/how-we-tested.md)). AsChecked lists problems it found in what it checked;
-> it cannot confirm that anything is secure.
-
 **You built an app with AI, and it works. AsChecked tells you what you didn't know to ask for.**
 
 AsChecked reads your project and tells you, in plain words, the few things a
