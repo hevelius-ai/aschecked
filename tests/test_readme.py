@@ -761,6 +761,7 @@ S7_31_HEADINGS = [
     "What you need",
     "In the Claude Code desktop app",
     "In a terminal",
+    "Project on GitHub? Use a cloud session",  # S7-67
     "No Claude Code? Use a claude.ai chat",
     "Not using Claude? Other AI tools",
     "More",
@@ -1015,6 +1016,44 @@ def test_s7_60_facts_without_downplaying() -> None:
     # S7-62 (owner, 25 Nov 2026): the README's "More" line for other tools carries no verdict.
     assert "- [Other AI tools in detail](docs/other-tools.md).\n" in text()
     assert "fell short" not in text()
+
+
+def test_s7_67_cloud_session_route() -> None:
+    # S7-67 (owner, 26 Nov 2026), after the S7-66 proof: a route for a project that is on GitHub but not on the
+    # user's computer, in a Claude Code cloud session, with the prompt file attached (nothing installed).
+    section = part("Project on GitHub? Use a cloud session")
+    steps = [flat(s) for s in items(section)]
+    assert len(steps) == 6, steps
+    for i, phrases in enumerate(
+        (
+            ("**Download the AsChecked prompt file.**", "(paste/aschecked-prompt.md)", "**Download raw file**"),
+            ("**Start a cloud session.**", "**Code** tab", "choose a cloud environment", "your GitHub repository"),
+            (
+                "**Choose the model.**",
+                "**Fable 5.2**",
+                "**Medium**",
+                "keep the mode on **Auto**",
+                "Do not use Accept edits or Bypass permissions",
+            ),
+            (
+                "**Start the review.**",
+                "Run the AsChecked review in the attached file on this project.",
+                "choose **No**",
+            ),
+            ("**Answer the three questions**", "skip"),
+            ("**Your report is ready.**", "Paste to your AI builder"),
+        )
+    ):
+        for phrase in phrases:
+            assert phrase in steps[i], (i, phrase)
+    body = flat(section)
+    assert "Nothing is installed" in body
+    assert "could not search your project's git history for keys" in body
+    assert "(docs/how-we-tested.md#cloud-session-26-nov-2026)" in body
+    assert "Your project only on GitHub? Use a cloud session instead." in flat(part("What you need"))
+    cloud = flat(doc("how-we-tested.md")).split("## Cloud session (26 Nov 2026)")[1]
+    for phrase in ("Claude Opus 5.5 at medium effort", "nothing installed", "`git status`", "no git commands"):
+        assert phrase in cloud, phrase
 
 
 def test_s7_59_no_fixed_problem_or_tool_limit_is_told() -> None:
