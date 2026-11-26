@@ -1022,40 +1022,59 @@ def test_s7_60_facts_without_downplaying() -> None:
 
 def test_s7_67_cloud_session_route() -> None:
     # S7-67 (owner, 26 Nov 2026), after the S7-66 proof: a route for a project that is on GitHub but not on the
-    # user's computer, in a Claude Code cloud session, with the prompt file attached (nothing installed).
+    # user's computer, in a Claude Code cloud session, with the prompt file attached (nothing installed). PR #8 review
+    # round 1 and the owner's wording: step 4 attaches by + or drag and drop, the prompt sits in a copyable box.
     section = part("Project on GitHub? Use a cloud session")
     steps = [flat(s) for s in items(section)]
     assert len(steps) == 6, steps
     for i, phrases in enumerate(
         (
             ("**Download the AsChecked prompt file.**", "(paste/aschecked-prompt.md)", GITHUB_DOWNLOAD),
-            ("**Start a cloud session.**", "**Code** tab", "choose a cloud environment", "your GitHub repository"),
+            (
+                "**Start a cloud session.**",
+                "**Code** tab",
+                "choose a cloud environment",
+                "your GitHub repository and the branch you want checked",
+            ),
             (
                 "**Choose the model.**",
                 "**Fable 5.2**",
+                "**Opus 5.5**",
                 "**Medium**",
-                "keep the mode on **Auto**",
-                "Do not use Accept edits or Bypass permissions",
+                "Keep **Auto** (choose it under the message box if it shows anything else)",
+                "Do not use Accept edits",
             ),
             (
                 "**Start the review.**",
-                "Run the AsChecked review in the attached file on this project.",
-                "choose **No**",
+                "Attach the file with **+** or drag and drop it into the Claude Code session.",
+                "Paste this prompt and send:",
+                "If it asks to allow anything other than reading, choose **No**.",
             ),
-            ("**Answer the three questions**", "skip"),
+            ("**Answer the three questions**", "skip", "not built yet", "separately"),
             ("**Your report is ready.**", "Paste to your AI builder"),
         )
     ):
         for phrase in phrases:
             assert phrase in steps[i], (i, phrase)
+    assert "``` Run the AsChecked review in the attached file on this project. ```" in steps[3]  # a copyable box
     body = flat(section)
     assert "Nothing is installed" in body
-    assert "could not search your project's git history for keys" in body
+    assert "In our try, AsChecked did not search the project's git history for keys, and the report said so." in body
+    assert "We tried this once, on one GitHub project, with Claude Opus 5.5" in body
     assert "(docs/how-we-tested.md#cloud-session-26-nov-2026)" in body
     assert "Your project only on GitHub? Use a cloud session instead." in flat(part("What you need"))
-    cloud = flat(doc("how-we-tested.md")).split("## Cloud session (26 Nov 2026)")[1]
-    for phrase in ("Claude Opus 5.5 at medium effort", "nothing installed", "`git status`", "no git commands"):
+    cloud = flat(doc("how-we-tested.md")).split("## Cloud session (26 Nov 2026)")[1].split(" ## ")[0]
+    for phrase in (
+        "one GitHub project",
+        "Claude Opus 5.5 at medium effort",
+        "Auto mode",
+        "nothing installed",
+        "our own `git status` after the report showed nothing",
+        "no git commands",
+        '"Not checked"',
+    ):
         assert phrase in cloud, phrase
+    assert "Installing AsChecked as a skill" not in cloud  # PR #8 review round 1 (MEDIUM): one try, not a rule
 
 
 def test_s7_59_no_fixed_problem_or_tool_limit_is_told() -> None:
@@ -1141,7 +1160,7 @@ CHAT_STEPS = [
     ("**Download your project as a zip.**", "**Download ZIP**", "choose it first"),
     ("[`paste/aschecked-prompt.md`](paste/aschecked-prompt.md)", GITHUB_DOWNLOAD),
     ("Claude Fable 5.2", "Claude Opus 5.5", "medium effort if offered"),
-    ("**Upload both files**", '"Run the AsChecked review in the attached prompt file on the attached project."'),
+    ("**Upload both files**", "Run the AsChecked review in the attached prompt file on the attached project."),
     ("**Answer the three questions**", '"skip"', "not built yet", "separately"),
     ("**Save the report**", '"Paste to your AI builder"'),
 ]
