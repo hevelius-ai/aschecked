@@ -80,7 +80,7 @@ def test_first_screen_names_tested_models_and_warning() -> None:
 # review; the desktop steps keep Auto (step 4) and then start the review with `/aschecked` (step 5). The old check
 # passed on the new README only through the Antigravity row of the other-tools table.
 def test_start_with_aschecked_in_auto() -> None:
-    steps = items(part("In the Claude desktop app"))
+    steps = items(part("In the Claude Code desktop app"))
     assert "Keep **Auto**" in steps[3], steps[3]
     assert "type `/aschecked`" in steps[4], steps[4]
 
@@ -105,7 +105,7 @@ def test_ai_reads_your_files() -> None:
 # Locked check changed under S7-40 (owner, 24 Nov 2026): "keep planning" became one sentence in the start step of
 # each list: a box asking to approve a plan is answered No.
 def test_keep_planning_if_asked() -> None:
-    for step in (items(part("In the Claude desktop app"))[4], terminal_steps()[4]):
+    for step in (items(part("In the Claude Code desktop app"))[4], terminal_steps()[4]):
         assert "approve a plan, choose **No**" in step, step
 
 
@@ -363,8 +363,8 @@ def test_mode_is_named_before_the_install_steps() -> None:
     # Locked check changed under S7-36, S7-37 and S7-44 (owner, 23 to 25 Nov 2026): "How it works" names both modes
     # before the desktop steps, with the hedge (S7-53: neither mode can promise that nothing changes); Shift+Tab is a
     # terminal key and moved with the terminal steps to docs/terminal.md (S7-42 2A).
-    assert "\n## In the Claude desktop app\n" in text()
-    before_install = flat(text()).split("## In the Claude desktop app")[0]
+    assert "\n## In the Claude Code desktop app\n" in text()
+    before_install = flat(text()).split("## In the Claude Code desktop app")[0]
     for phrase in ("Auto mode", "plan mode", "**It is meant only to read.**"):  # S7-59
         assert phrase in before_install, phrase
     assert "Shift+Tab" in terminal_steps()[2]
@@ -391,7 +391,7 @@ def test_which_version_it_reviews() -> None:
     # chat step 5 (R6.1); "may look at your other branches" moved to docs/git-safety.md. The docs half is unchanged.
     # Locked check changed under S7-39 1A and S7-42 2A (owner, 24 Nov 2026): the version is one optional line in
     # step 1 of each list (desktop in the README, terminal on docs/terminal.md); step 6 holds the unfinished part.
-    desktop = items(part("In the Claude desktop app"))
+    desktop = items(part("In the Claude Code desktop app"))
     terminal = terminal_steps()
     for phrase in ("finished app", "usually main or master"):
         assert phrase in desktop[0], phrase
@@ -418,10 +418,16 @@ def test_which_version_it_reviews() -> None:
 # (test_s7_31_review_steps), and nothing in the README points to another part of it (test_s7_31_no_cross_references).
 # Locked check changed under S7-39 1A (owner, 24 Nov 2026): step 1 of each list carries the optional version line.
 def test_run_steps_point_to_choosing_the_branch() -> None:
-    for step in (items(part("In the Claude desktop app"))[0], terminal_steps()[0]):
+    for step in (items(part("In the Claude Code desktop app"))[0], terminal_steps()[0]):
         assert "If you use git branches" in step, step
         assert "if not, skip this" in step, step
     assert "Which version it reviews" not in text()
+    # S7-65 B (owner, 25 Nov 2026): step 1 opens by naming the Code tab and This computer.
+    first = flat(items(part("In the Claude Code desktop app"))[0])
+    assert first.startswith(
+        "**Start a session on your project.** Open the **Code** tab (not Chat or Cowork) and start a new session; "
+        "in the bar under the message box, choose **This computer**."
+    ), first
 
 
 # Added in S7-14 (owner, 18 Nov 2026; design R-a and R-e): Sonnet stopping early, how to remove AsChecked, and the
@@ -507,7 +513,7 @@ def test_s7_20_says_where_to_save_the_report() -> None:
     # S7-31 (test table): review step 10, "Save the report".
     # Locked check changed under S7-40 (owner, 24 Nov 2026): step 7 of each list, "Your report is ready", with saving
     # optional.
-    for step in (items(part("In the Claude desktop app"))[6], terminal_steps()[6]):
+    for step in (items(part("In the Claude Code desktop app"))[6], terminal_steps()[6]):
         assert step.startswith("**Your report is ready.**"), step
         assert "into a text file outside your project's folder" in step, step
 
@@ -753,7 +759,7 @@ S7_31_HEADINGS = [
     "What you get",
     "How it works",
     "What you need",
-    "In the Claude desktop app",
+    "In the Claude Code desktop app",
     "In a terminal",
     "No Claude Code? Use a claude.ai chat",
     "Not using Claude? Other AI tools",
@@ -818,7 +824,7 @@ INSTALL_PROMPT = (
 # time only") of each list, in Auto, in the same session on the project; the pasted message is identical in the
 # README, on docs/terminal.md and on docs/install-options.md; no `/exit` (one session).
 def test_s7_31_install_is_a_pasted_prompt() -> None:
-    desktop = part("In the Claude desktop app")
+    desktop = part("In the Claude Code desktop app")
     prompt = fenced_prompt(desktop)
     for phrase in INSTALL_PROMPT:
         assert phrase in prompt, phrase
@@ -937,7 +943,7 @@ TERMINAL_STEPS = [
 
 def test_s7_31_review_steps() -> None:
     for steps, table in (
-        (items(part("In the Claude desktop app")), DESKTOP_STEPS),
+        (items(part("In the Claude Code desktop app")), DESKTOP_STEPS),
         (terminal_steps(), TERMINAL_STEPS),
     ):
         assert len(steps) == len(table), len(steps)

@@ -33,12 +33,12 @@ message to paste to your AI builder; then up to five smaller ones, one line each
 - **One of these three settings:** **Claude Fable 5.2 at medium effort (best)**, Claude Opus 5.5 at medium effort, or
   Claude Fable 5.2 at low effort.
 
-## In the Claude desktop app
+## In the Claude Code desktop app
 
-1. **Start a session on your project.** If you use git branches, first switch your project's folder to the version you
-   want checked (for your finished app, usually main or master), the way you usually do; if not, skip this. In the **Code** tab,
-   start a new session. In the bar under the message box, choose **This computer**, click the folder name and choose
-   your project's folder. Untick **Worktree** if it is ticked. If it asks whether you trust this folder, choose **Yes**.
+1. **Start a session on your project.** Open the **Code** tab (not Chat or Cowork) and start a new session; in the bar
+   under the message box, choose **This computer**. If you use git branches, first switch your project's folder to the
+   version you want checked (for your finished app, usually main or master), the way you usually do; if not, skip
+   this. Then click the folder name and choose your project's folder. Untick **Worktree** if it is ticked. If it asks whether you trust this folder, choose **Yes**.
 2. **Choose the model.** Click the model name and choose **Fable 5.2** (or **Opus 5.5** if the list has no Fable 5.2).
    In the same menu, open **Effort** and choose **Medium**. Turn fast mode off if it is on.
 3. **First time only: install AsChecked.** Click the mode under the message box and choose **Auto** if it shows
