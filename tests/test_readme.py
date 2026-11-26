@@ -1050,7 +1050,7 @@ def test_s7_44_full_test_section() -> None:
         "| Codex, GPT-6-Luna, medium, read-only | 72 of 110 (47.5 to 80.5%) |",
         "**Is Auto as good as plan mode?**",
         "**Recommended: Claude Fable 5.2 at medium effort, in Auto.**",
-        "**Limits:**",  # S7-60
+        "**Limits:** we built the 24 apps and planted their problems (16 for this test, 8 for the sandbox test above)",
     ):
         assert phrase in section, phrase
     version = flat(page.split("## Which version was tested")[1].split("\n## ")[0])

@@ -267,6 +267,7 @@ of 80; Claude Opus 5.5 medium, plan mode 68 of 80; Auto 72 of 80; Claude Fable 5
 **Runs.** Codex ran 110 and Antigravity 10 of the 120 runs planned for each; Cursor was not part of this test. One
 Claude run that read a file outside its copy was set aside and run again.
 
-**Limits:** we built the 24 apps for this test and planted their problems; they are not projects from real users. One
+**Limits:** we built the 24 apps and planted their problems (16 for this test, 8 for the sandbox test above); they
+are not projects from real users. One
 Windows machine, the tool versions above, two days in November 2026. AsChecked was developed with Claude, and Claude
 models built the apps, checked the answer keys and scored the reports. The real projects in our benchmark remain the main evidence for choosing a model.
