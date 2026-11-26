@@ -7,6 +7,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 README = ROOT / "README.md"
+# S7-67 (owner, 26 Nov 2026): GitHub's own labels for downloading one file.
+GITHUB_DOWNLOAD = "click the **⋯** button at the top right of the file and choose **Download**"
 
 # The outside test projects are described by type, never by name or owner, in every public text. This check
 # knows them only by the SHA-256 of each name in lower case, so the repository never holds the names themselves.
@@ -521,7 +523,7 @@ def test_s7_20_says_where_to_save_the_report() -> None:
 def test_s7_20_says_how_to_download_the_prompt_file() -> None:
     # round 3 L2: the chat section ends where the other-tools section starts
     chat = between(flat(text()), "## No Claude Code? Use a claude.ai chat", "## Not using Claude? Other AI tools")
-    assert "**Download raw file**" in chat
+    assert GITHUB_DOWNLOAD in chat
 
 
 # Added for the owner's S7-21 B (19 to 22 Nov 2026): Codex, Cursor, Antigravity, Lovable and Bolt were each tried once
@@ -759,7 +761,9 @@ S7_31_HEADINGS = [
     "What you get",
     "How it works",
     "What you need",
+    "Choose how to run it",  # S7-68
     "In the Claude Code desktop app",
+    "Project on GitHub? Use a cloud session",  # S7-67: after the desktop steps
     "In a terminal",
     "No Claude Code? Use a claude.ai chat",
     "Not using Claude? Other AI tools",
@@ -788,8 +792,11 @@ def test_s7_31_readme_parts_in_order() -> None:
 
 def test_s7_31_no_cross_references() -> None:
     body = flat(text()).lower()
-    for phrase in ('see "', "section", "](#", "the same again", "the table"):
+    for phrase in ('see "', "section", "the same again", "the table"):
         assert phrase not in body, phrase
+    # S7-68 (owner, 26 Nov 2026): in-page links only in "Choose how to run it", one to each way of running it.
+    outside = re.sub(r"\n## Choose how to run it\n.*?(?=\n## )", "\n", text(), flags=re.S)
+    assert "](#" not in outside
     # S7-31 PR review round 1 (M2): the words on their own, steps by number or in words, and heading names quoted.
     assert not re.search(r"\b(above|below|earlier|later on)\b", body)
     numbers = r"(\d+|one|two|three|four|five|six|seven|eight|nine|ten|eleven)"
@@ -797,7 +804,7 @@ def test_s7_31_no_cross_references() -> None:
     for heading in S7_31_HEADINGS:
         assert f'"{heading.lower()}"' not in body, heading
     for link in re.findall(r"\]\(([^)]+)\)", text()):
-        assert link.startswith(("docs/", "paste/", "https://")) or link in ("LICENSE", "LICENSE-CODE"), link
+        assert link.startswith(("docs/", "paste/", "https://", "#")) or link in ("LICENSE", "LICENSE-CODE"), link
 
 
 def test_s7_31_first_screen() -> None:
@@ -1017,6 +1024,79 @@ def test_s7_60_facts_without_downplaying() -> None:
     assert "fell short" not in text()
 
 
+def test_s7_67_cloud_session_route() -> None:
+    # S7-67 (owner, 26 Nov 2026), after the S7-66 proof: a route for a project that is on GitHub but not on the
+    # user's computer, in a Claude Code cloud session, with the prompt file attached (nothing installed). PR #8 review
+    # round 1 and the owner's wording: step 4 attaches by + or drag and drop, the prompt sits in a copyable box.
+    section = part("Project on GitHub? Use a cloud session")
+    steps = [flat(s) for s in items(section)]
+    assert len(steps) == 6, steps
+    for i, phrases in enumerate(
+        (
+            ("**Download the AsChecked prompt file.**", "(paste/aschecked-prompt.md)", GITHUB_DOWNLOAD),
+            (
+                "**Start a cloud session.**",
+                "**Code** tab",
+                "choose a cloud environment",
+                "your GitHub repository and the branch you want checked",
+            ),
+            (
+                "**Choose the model.**",
+                "**Fable 5.2**",
+                "**Opus 5.5**",
+                "**Medium**",
+                "Keep **Auto** (choose it under the message box if it shows anything else)",
+                "Do not use Accept edits",
+            ),
+            (
+                "**Start the review.**",
+                "Attach the file with **+** or drag and drop it into the Claude Code session.",
+                "Paste this prompt and send:",
+                "If it asks to allow anything other than reading, choose **No**.",
+            ),
+            ("**Answer the three questions**", "skip", "not built yet", "separately"),
+            ("**Your report is ready.**", "Paste to your AI builder"),
+        )
+    ):
+        for phrase in phrases:
+            assert phrase in steps[i], (i, phrase)
+    assert "``` Run the AsChecked review in the attached file on this project. ```" in steps[3]  # a copyable box
+    body = flat(section)
+    assert "Nothing is installed" in body
+    assert "In our try, AsChecked did not search the project's git history for keys, and the report said so." in body
+    assert "We tried this once, on one GitHub project, with Claude Opus 5.5" in body
+    assert "(docs/how-we-tested.md#cloud-session-26-nov-2026)" in body
+    assert "Your project only on GitHub? Use a cloud session instead." in flat(part("What you need"))
+    cloud = flat(doc("how-we-tested.md")).split("## Cloud session (26 Nov 2026)")[1].split(" ## ")[0]
+    for phrase in (
+        "one GitHub project",
+        "Claude Opus 5.5 at medium effort",
+        "Auto mode",
+        "nothing installed",
+        "our own `git status` after the report showed nothing",
+        "no git commands",
+        '"Not checked"',
+    ):
+        assert phrase in cloud, phrase
+    assert "Installing AsChecked as a skill" not in cloud  # PR #8 review round 1 (MEDIUM): one try, not a rule
+
+
+def test_s7_68_choose_how_to_run_it() -> None:
+    # S7-68 (owner, 26 Nov 2026): right after "What you need", a list that links each way of running AsChecked, so
+    # no way reads as the only one and nobody has to scroll to find the terminal or the chat.
+    ways = [
+        "In the Claude Code desktop app",
+        "Project on GitHub? Use a cloud session",
+        "In a terminal",
+        "No Claude Code? Use a claude.ai chat",
+        "Not using Claude? Other AI tools",
+    ]
+    links = re.findall(r"^- \[([^\]]+)\]\(#([^)]+)\)$", part("Choose how to run it"), re.M)
+    assert links == [(w, slug(w)) for w in ways], links
+    need = flat(part("What you need"))
+    assert "**Claude Code** in the Claude desktop app or in a terminal" in need
+
+
 def test_s7_59_no_fixed_problem_or_tool_limit_is_told() -> None:
     # S7-59 (owner, 25 Nov 2026): the README and docs say nothing about problems already fixed, and nothing about a
     # tool's quota, limit or plan; a tool not tried is plainly "not tried". The testing page keeps its results.
@@ -1098,9 +1178,9 @@ def test_s7_36_what_you_need_and_licence() -> None:
 
 CHAT_STEPS = [
     ("**Download your project as a zip.**", "**Download ZIP**", "choose it first"),
-    ("[`paste/aschecked-prompt.md`](paste/aschecked-prompt.md)", "**Download raw file**"),
+    ("[`paste/aschecked-prompt.md`](paste/aschecked-prompt.md)", GITHUB_DOWNLOAD),
     ("Claude Fable 5.2", "Claude Opus 5.5", "medium effort if offered"),
-    ("**Upload both files**", '"Run the AsChecked review in the attached prompt file on the attached project."'),
+    ("**Upload both files**", "Run the AsChecked review in the attached prompt file on the attached project."),
     ("**Answer the three questions**", '"skip"', "not built yet", "separately"),
     ("**Save the report**", '"Paste to your AI builder"'),
 ]
