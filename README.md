@@ -25,7 +25,7 @@ message to paste to your AI builder; then up to five smaller ones, one line each
 
 ## What you need
 
-- **Claude Code** in the Claude desktop app, and a Claude plan that includes it. Get the app at
+- **Claude Code** in the Claude desktop app or in a terminal, and a Claude plan that includes it. Get the app at
   https://claude.com/download and sign in.
 - **Your project in a folder on your computer, one you built yourself.** Built in Lovable, Bolt or Replit and not on
   your computer? Use a claude.ai chat instead. Your project only on GitHub? Use a cloud session instead. For a project
@@ -33,6 +33,14 @@ message to paste to your AI builder; then up to five smaller ones, one line each
   [this first](docs/git-safety.md#a-project-from-someone-else).
 - **One of these three settings:** **Claude Fable 5.2 at medium effort (best)**, Claude Opus 5.5 at medium effort, or
   Claude Fable 5.2 at low effort.
+
+## Choose how to run it
+
+- [In the Claude Code desktop app](#in-the-claude-code-desktop-app)
+- [Project on GitHub? Use a cloud session](#project-on-github-use-a-cloud-session)
+- [In a terminal](#in-a-terminal)
+- [No Claude Code? Use a claude.ai chat](#no-claude-code-use-a-claudeai-chat)
+- [Not using Claude? Other AI tools](#not-using-claude-other-ai-tools)
 
 ## In the Claude Code desktop app
 

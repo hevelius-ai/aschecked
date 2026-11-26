@@ -761,6 +761,7 @@ S7_31_HEADINGS = [
     "What you get",
     "How it works",
     "What you need",
+    "Choose how to run it",  # S7-68
     "In the Claude Code desktop app",
     "Project on GitHub? Use a cloud session",  # S7-67: after the desktop steps
     "In a terminal",
@@ -791,8 +792,11 @@ def test_s7_31_readme_parts_in_order() -> None:
 
 def test_s7_31_no_cross_references() -> None:
     body = flat(text()).lower()
-    for phrase in ('see "', "section", "](#", "the same again", "the table"):
+    for phrase in ('see "', "section", "the same again", "the table"):
         assert phrase not in body, phrase
+    # S7-68 (owner, 26 Nov 2026): in-page links only in "Choose how to run it", one to each way of running it.
+    outside = re.sub(r"\n## Choose how to run it\n.*?(?=\n## )", "\n", text(), flags=re.S)
+    assert "](#" not in outside
     # S7-31 PR review round 1 (M2): the words on their own, steps by number or in words, and heading names quoted.
     assert not re.search(r"\b(above|below|earlier|later on)\b", body)
     numbers = r"(\d+|one|two|three|four|five|six|seven|eight|nine|ten|eleven)"
@@ -800,7 +804,7 @@ def test_s7_31_no_cross_references() -> None:
     for heading in S7_31_HEADINGS:
         assert f'"{heading.lower()}"' not in body, heading
     for link in re.findall(r"\]\(([^)]+)\)", text()):
-        assert link.startswith(("docs/", "paste/", "https://")) or link in ("LICENSE", "LICENSE-CODE"), link
+        assert link.startswith(("docs/", "paste/", "https://", "#")) or link in ("LICENSE", "LICENSE-CODE"), link
 
 
 def test_s7_31_first_screen() -> None:
@@ -1075,6 +1079,22 @@ def test_s7_67_cloud_session_route() -> None:
     ):
         assert phrase in cloud, phrase
     assert "Installing AsChecked as a skill" not in cloud  # PR #8 review round 1 (MEDIUM): one try, not a rule
+
+
+def test_s7_68_choose_how_to_run_it() -> None:
+    # S7-68 (owner, 26 Nov 2026): right after "What you need", a list that links each way of running AsChecked, so
+    # no way reads as the only one and nobody has to scroll to find the terminal or the chat.
+    ways = [
+        "In the Claude Code desktop app",
+        "Project on GitHub? Use a cloud session",
+        "In a terminal",
+        "No Claude Code? Use a claude.ai chat",
+        "Not using Claude? Other AI tools",
+    ]
+    links = re.findall(r"^- \[([^\]]+)\]\(#([^)]+)\)$", part("Choose how to run it"), re.M)
+    assert links == [(w, slug(w)) for w in ways], links
+    need = flat(part("What you need"))
+    assert "**Claude Code** in the Claude desktop app or in a terminal" in need
 
 
 def test_s7_59_no_fixed_problem_or_tool_limit_is_told() -> None:
