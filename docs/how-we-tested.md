@@ -6,7 +6,7 @@ Back to the [README](../README.md).
 
 The benchmark below ran on the method as it was on 18 Nov 2026 (`skills/aschecked` at commit `d8dd162`), before the
 rule that has AsChecked say in plain words what each step does and the checks on cited lines and ranking (added 22 Nov
-2026). The sandbox test below ran on the version of 22 Nov 2026, on the two versions before it and on the earlier one, to
+2026). The sandbox test below ran on the version of 22 Nov 2026 (called "released version" there), on the two versions before it and on the earlier one, to
 check that these changes made nothing worse.
 
 The full test (see [Plan mode and Auto mode](#plan-mode-and-auto-mode)) ran commit `f574112`.
@@ -161,7 +161,7 @@ shows that single scoring:
 | Claude Code, first version with the plain-words rule (24) | 18 of 18, always as finding 1 | 2.8 | 20 of 24 | 6 of 6 | 3 of 3 |
 | Claude Code, earlier version (8) | 6 of 6 | 2.8 | 6 of 8 | 2 of 2 | 1 of 1 |
 | Codex (8) | 5 of 6 | 2.0 | 3 of 8 | 2 of 2 | 1 of 1 |
-| Cursor (2 of 8) | 2 of 2 | 3.0 | 1 of 2 | not run | not run |
+| Cursor (2 of 8; the other six did not run) | 2 of 2 | 3.0 | 1 of 2 | not run | not run |
 
 The released version met every pass mark. Scored round by round, by new scorers each time, the three versions came to
 20, 21 and 23 of 24 on the report checks: the second round's scorers failed a citation one line off, while the third

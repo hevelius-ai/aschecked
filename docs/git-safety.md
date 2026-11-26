@@ -6,7 +6,8 @@ AsChecked reviews the branch you have open, and may look at your other branches 
 report outside your project's folder, so that it does not show up as a change in your project.
 
 Read-only is an instruction the model is asked to follow, in Claude Code and every other tool. Plan mode in Claude
-Code is meant to keep it reading and planning instead of editing. Whether other tools' plan or read-only modes
+Code is meant to keep it reading and planning instead of editing. Plan mode blocks Claude's edits but not every shell
+command. Whether other tools' plan or read-only modes
 really block changes is not yet proven; where nothing blocks them, the limits are only instructions.
 
 **Git settings:** a project's own git settings can make git run a program. AsChecked's git commands switch off the

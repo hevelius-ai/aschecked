@@ -998,6 +998,12 @@ def test_s7_60_facts_without_downplaying() -> None:
             "small file",
         ):
             assert phrase not in body, f"{path.name}: {phrase}"
+    # Confirmation check on S7-59: facts kept plain. The sandbox's "released version" is the 22 Nov version; the
+    # Cursor row says what ran; the read-only page states where plan mode stops.
+    how = flat(doc("how-we-tested.md"))
+    assert 'ran on the version of 22 Nov 2026 (called "released version" there)' in how
+    assert "| Cursor (2 of 8; the other six did not run) |" in how
+    assert "Plan mode blocks Claude's edits but not every shell command." in flat(doc("git-safety.md"))
 
 
 def test_s7_59_no_fixed_problem_or_tool_limit_is_told() -> None:
