@@ -271,3 +271,13 @@ Claude run that read a file outside its copy was set aside and run again.
 are not projects from real users. One
 Windows machine, the tool versions above, two days in November 2026. AsChecked was developed with Claude, and Claude
 models built the apps, checked the answer keys and scored the reports. The real projects in our benchmark remain the main evidence for choosing a model.
+
+## Cloud session (26 Nov 2026)
+
+We reviewed one GitHub project, our own website's repository, in a Claude Code cloud session: Claude Opus 5.5 at
+medium effort, Auto mode, the prompt file `paste/aschecked-prompt.md` attached and nothing installed. The report had
+every required part, the four citations we checked against the repository each said what the report claimed, no key
+value appeared, and nothing in the project changed (`git status` showed nothing). The session's git refused one of
+AsChecked's safety settings, so AsChecked ran no git commands: it did not search past commits for keys or check other
+branches, and the report said so under "Not checked". Installing AsChecked as a skill does not work in a cloud
+session: it can download only from the repository it is attached to, and it does not keep an install.

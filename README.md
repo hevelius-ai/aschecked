@@ -28,7 +28,8 @@ message to paste to your AI builder; then up to five smaller ones, one line each
 - **Claude Code** in the Claude desktop app, and a Claude plan that includes it. Get the app at
   https://claude.com/download and sign in.
 - **Your project in a folder on your computer, one you built yourself.** Built in Lovable, Bolt or Replit and not on
-  your computer? Use a claude.ai chat instead. For a project from someone else, read
+  your computer? Use a claude.ai chat instead. Your project only on GitHub? Use a cloud session instead. For a project
+  from someone else, read
   [this first](docs/git-safety.md#a-project-from-someone-else).
 - **One of these three settings:** **Claude Fable 5.2 at medium effort (best)**, Claude Opus 5.5 at medium effort, or
   Claude Fable 5.2 at low effort.
@@ -71,6 +72,28 @@ message to paste to your AI builder; then up to five smaller ones, one line each
 ## In a terminal
 
 Using Claude Code in a terminal? [Follow these steps](docs/terminal.md).
+
+## Project on GitHub? Use a cloud session
+
+Your project is on GitHub but not on your computer? Claude Code can review it in a cloud session. Nothing is
+installed: you attach the AsChecked prompt file.
+
+1. **Download the AsChecked prompt file.** Open [`paste/aschecked-prompt.md`](paste/aschecked-prompt.md) on GitHub
+   and click **Download raw file**.
+2. **Start a cloud session.** In the Claude Code desktop app, open the **Code** tab and start a new session. In the
+   bar under the message box, choose a cloud environment (it shows a cloud icon), then your GitHub repository and the
+   branch you want checked (for your finished app, usually main or master).
+3. **Choose the model.** Choose **Fable 5.2** (or **Opus 5.5**) and **Medium** effort, and keep the mode on **Auto**.
+   Do not use Accept edits or Bypass permissions.
+4. **Start the review.** Attach the prompt file with **+**, type "Run the AsChecked review in the attached file on
+   this project." and send. If it asks you to allow something other than reading, choose **No**.
+5. **Answer the three questions**, or say "skip". If part of your app is not built yet, say which part: AsChecked
+   then lists the problems in that part separately.
+6. **Your report is ready.** If you want to keep it, copy it into a text file. Then pass it to your AI builder: each
+   problem comes with a "Paste to your AI builder" message.
+
+In a cloud session AsChecked could not search your project's git history for keys; the report says so. We tried this
+once, on one GitHub project, with Claude Opus 5.5: [our test results](docs/how-we-tested.md#cloud-session-26-nov-2026).
 
 ## No Claude Code? Use a claude.ai chat
 
