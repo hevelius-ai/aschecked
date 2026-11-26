@@ -4,7 +4,11 @@ Behaviour is proven by the smoke runs and the re-test, not here: these checks on
 """
 
 import re
+import shutil
+import subprocess
 from pathlib import Path
+
+import pytest
 
 ROOT = Path(__file__).resolve().parent.parent
 SKILL_DIR = ROOT / "skills" / "aschecked"
@@ -68,6 +72,27 @@ def test_secret_search_always_uses_H() -> None:
         for flags in re.findall(r"(?:^|\s)-([A-Za-z]+)", command.split("|")[0]):
             if "n" in flags:
                 assert "H" in flags, f"grep with -n but without -H: {command}"
+
+
+def test_k3_commands_never_write_a_file() -> None:
+    # K3 (S7-57): in the full test an improvised awk `print ..., x>0` wrote a file named 0 into the project.
+    limits = flat(section("Hard limits"))
+    for phrase in (
+        "Never send output to a file",
+        "`>`",
+        "`>>`",
+        "`tee`",
+        "`-o`",
+        "`2>/dev/null` is not a file",
+        "in awk put every comparison after `print` or `printf` in brackets",
+        "`(x > 0)`",
+    ):
+        assert phrase in limits, phrase
+    assert "writes a file named `0`" in limits
+    # The skill's own awk program (its longest quoted piece) holds no `>` at all, so it can never write a file.
+    for command in re.findall(r"`(awk [^`]*)`", skill_text()):
+        program = max(command.split("'")[1::2], key=len)
+        assert ">" not in program.replace("<line>", ""), f"a > in the skill's awk program: {command}"
 
 
 def test_masked_read_line() -> None:
@@ -419,3 +444,334 @@ def test_written_log_and_show_carry_short_submodule_diffs() -> None:
             words = command.split()
             if "log" in words or "show" in words:
                 assert "diff.submodule=short" in words, f"{path.name}: {command}"
+
+
+# Added for the owner's S7-27 A (22 Nov 2026): people who do not code met technical prompts they could not follow.
+# Before every step, question and command the review now says one plain-words line, then the technical detail.
+def test_s7_27_plain_words_rule_comes_before_the_steps() -> None:
+    body = skill_text()
+    assert re.search(r"^## Talk to the owner in plain words$", body, re.M)
+    assert body.index("## Talk to the owner in plain words") < body.index("## Steps")
+    assert body.index("## Hard limits") < body.index("## Talk to the owner in plain words")
+
+
+def test_s7_27_plain_words_rule_text() -> None:
+    rule = flat(section("Talk to the owner in plain words"))
+    for phrase in (
+        "Before every step, question and command (file reads and searches included)",
+        "a person who does not code understands",
+        "what you are about to do, what it checks, and that nothing in their project changes",
+        "Never quote file contents in that line",
+        "never promise not to read something",
+        "you read the project's files, keys included, and keep values out of everything you write",
+        "These lines are conversation, never part of the report",
+        "Then the technical detail as usual.",
+    ):
+        assert phrase in rule, phrase
+
+
+def test_s7_27_plain_words_example_never_promises_not_to_see() -> None:
+    rule = flat(section("Talk to the owner in plain words"))
+    assert (
+        '"Next: looking for passwords or keys left in your files. I note only where they are and never repeat them. '
+        'Nothing is changed."'
+    ) in rule
+    assert "never what they say" not in rule and "only see" not in rule
+
+
+def test_s7_27_intake_questions_in_plain_words() -> None:
+    steps = flat(section("Steps"))
+    intake = steps.split("1. **Intake.**", 1)[1].split("2. **", 1)[0]
+    for phrase in (
+        '"What does your app do, and who uses it?"',
+        '"What did you change or add recently?"',
+        '"Is anything true today that the code would not show, for example it is not live yet, or only you use it?"',
+        '"Answer in a few words each, or say skip if you\'re not sure and I will work it out from your README."',
+    ):
+        assert phrase in intake, phrase
+    # Round 1 review (MEDIUM): the automatic-run rule and "asked once" are pinned in full.
+    assert "Ask the owner three questions once, in these words:" in intake
+    assert (
+        "If there is no answer (an automatic run), infer from the README and any public page, "
+        "and mark each item as told or inferred."
+    ) in intake
+
+
+# Added for the owner's S7-28 B (22 Nov 2026): the sandbox missed its line-accuracy pass mark (cited lines one or two
+# off, some past the end of a file). Before writing the report, every cited file and line is re-read and corrected.
+def test_s7_28_citations_are_re_read_before_the_report() -> None:
+    steps = flat(section("Steps"))
+    assert "8. **Check every citation.**" in steps
+    check = steps.split("8. **Check every citation.**", 1)[1].split("9. **", 1)[0]
+    for phrase in (
+        "Before writing the report, open again each file and line or range you cite",
+        '"Also found" and the work-in-progress lines',
+        "confirm it shows what you say",
+        "correct the line number",
+        # S7-28 review round 1 (MEDIUM): a flagged file is checked without showing the flagged line.
+        "For a file the secret search flagged, confirm the number only with the secret-safe search",
+        "`grep -nHE '<pattern>' <file> | cut -d: -f1,2`",
+        "never by showing the flagged line",
+        "If no line in the project shows the claim, drop the claim, or say plainly what is missing",
+        "the first line is 1",
+        "never past the file's last line",
+    ):
+        assert phrase in check, phrase
+    assert "9. **Write the report.**" in steps
+    assert steps.index("7. **Rank and keep at most five,**") < steps.index("8. **Check every citation.**")
+
+
+def test_s7_29_masked_read_shows_line_numbers() -> None:
+    # S7-29: a masked read with sed showed no line numbers, so a cited line was counted by hand (one off).
+    limits = flat(section("Hard limits"))
+    assert re.search(r"`sed -E -e = -e '[^`]*KEY\|SECRET\|TOKEN\|PASSWORD[^`]*`", limits), "masked read without -e ="
+    assert "prints each line's number above it" in limits
+
+
+def test_s7_29_citations_are_checked_with_new_reads() -> None:
+    # S7-29: in 18 of 24 runs step 8 was done from memory, with no new read of any cited line.
+    steps = flat(section("Steps"))
+    check = steps.split("8. **Check every citation.**", 1)[1].split("9. **", 1)[0]
+    for phrase in (
+        "Do it with new reads, not from memory",
+        "even when the file was read earlier",
+        "the file-read tool with a start line and a line count",
+        # S7-29 review round 1 (MEDIUM 2 and 3): the route through the lines around a flagged line is kept,
+        # and step 8 does not point at a masked read that can show an unmasked flagged line.
+        "or by reading the lines around it, never by showing the flagged line",
+    ):
+        assert phrase in check, phrase
+    assert "masked read" not in check
+
+
+def test_s7_29_deliberate_harm_ranks_above_accidents() -> None:
+    # S7-29: one run ranked lost orders and a missing address above "anyone can mark an order paid".
+    steps = flat(section("Steps"))
+    rank = steps.split("7. **Rank and keep at most five,**", 1)[1].split("8. **", 1)[0]
+    # S7-29 review round 1 (MEDIUM 4): bounded by harm, covers change and erase, and says it holds whoever is hurt.
+    for phrase in (
+        "Count what any stranger can do on purpose as likely",
+        "at about the same harm",
+        "taking, changing or erasing money, goods, data or accounts on purpose ranks above an accident",
+        "whoever each one hurts",
+    ):
+        assert phrase in rank, phrase
+
+
+def test_s7_29_numbered_masked_read_hides_values() -> None:
+    # S7-29 review round 1 (MEDIUM 1): the numbered form, applied as written, hides every value too.
+    example = re.search(r"`sed -E -e = -e 's/(.+?)/(.*?)/' <file>`", section("Hard limits"))
+    assert example, "no numbered masked-read example"
+    pattern = example.group(1).replace("[[:space:]]", r"\s").replace("[:space:]", r"\s")
+    for line in KEY_LINES:
+        masked = re.sub(pattern, example.group(2), line)
+        assert DUMMY not in masked, f"value shown: {line!r} -> {masked!r}"
+        assert "<hidden>" in masked
+
+
+# S7-44 2A (owner, 24 Nov 2026): the S7-42 re-score found reports giving a key's length as a bound, a range, the
+# whole line's length or not at all (public-by-design keys included), and a fix's effort as a range or two sizes.
+# First form written before the skill change and seen failing; reworked after PR review round 1 (finding 1, HIGH:
+# the first command miscounted common line forms; findings 3 to 5: PowerShell quoting, tests that did not run awk;
+# then a Windows proof: escapes in the separator broke when awk was started outside Git Bash), round 2 (N1, N2: the
+# longest piece is not always the value; the rule and the character set were not pinned), round 3 (R3-1, R3-2: the
+# awk test compared part of its output; lines with no key gave an "exact" number) and the re-check (H1: the model
+# could not see whether a piece holds digits, so the command now prints it; S7-48: a variable's name holding a digit
+# and a full stop after the value are handled), round 4 (N4-1, R3-2: a key in capitals was taken for a name, and
+# dotted or snake-case names were taken for keys; N4-3 to N4-5: unproven parts, a half-pinned sentence, named limits).
+# S7-46 2A (owner): exact where it can be counted for certain, otherwise "length not certain". S7-49 A (owner): the
+# remaining edge cases are named known limits below, and the full test measures real accuracy.
+NAME_IN_CODE = (
+    "env[.]|^[A-Za-z_][A-Za-z0-9_]*([.][A-Za-z_][A-Za-z0-9_]*)+$|^[A-Z0-9]*_[A-Z0-9_]*$|^[a-z0-9]*_[a-z0-9_]*$"
+)
+# Provider-style prefixes are built from parts, so no key-shaped literal sits whole in this file (GitHub push
+# protection blocked such fake keys on 24 Nov). The values are fake.
+STRIPE_LIVE = "sk" + "_live_"
+SHOPIFY_PAT = "shp" + "at_"
+SENDGRID = "S" + "G."
+JWT_HEAD = "ey" + "J"
+JWT_SHAPE = "^eyJ.*[.].*[.]"  # round 5 (N5-1): a signed JWT is a value, never a name in code
+LENGTH_COMMAND = (
+    "awk -F'[^A-Za-z0-9_.+/~-]+' 'NR==<line> {for (i=1; i<=NF; i++) {p=$i; sub(/[.]+$/, e, p); print i, length(p), "
+    f"(p ~ /[A-Za-z]/) * (p ~ /[0-9]/), (p ~ /{NAME_IN_CODE}/) * (p !~ /{JWT_SHAPE}/)}}}}' <file>"
+)
+LENGTH_SENTENCE = (
+    "which prints four numbers for each piece of the line, never its text: its position, its length (full stops at its "
+    "end not counted), 1 if it holds both letters and digits, and 1 if it looks like a name in code (it contains "
+    "`env.`; or it is a dotted name such as `config.apiKey`; or it has a `_` and otherwise only capitals and digits, "
+    "or only small letters and digits; never for a JWT, which starts with `eyJ` and has two full stops):"
+)
+LENGTH_RULE = (
+    "Report a piece's length as the key's exact length only when it is the only piece after the key's name that is "
+    "longer than 8 characters with third number 1 and fourth number 0, and the kind of key has a known format of "
+    "letters, digits and `_ . + / ~ -` (for example an `sk-` key, a JWT, a hex or base62 token); otherwise write "
+    '"length not certain" and why (another such piece on the line, no such piece, or a password, URL, connection '
+    "string, JWT signing secret or base64 secret); never a range, a bound or the length of the whole line."
+)
+LONG_DUMMY = "sk-Zq8x_Yv3.Lm2+Np7/Rt4~Wk9Bc6Hd1"  # 33 characters, every allowed punctuation mark
+# (line form, the key's name on it, what the rule gives: the value's length, or None for "length not certain").
+# Lines whose answer depends on the key's kind (a password, a JWT signing secret, base64 ending in `=`, a token with
+# a `:`) are left to the rule's "known format" condition, which a test cannot apply. A key with a `_` and otherwise
+# only capitals and digits gives "not certain" by the fourth number: a safe miss, not a wrong number (N5-6).
+RULE_CASES = [
+    ("OPENAI_API_KEY={v}", "OPENAI_API_KEY", 33),
+    ('const apiKey = "{v}";', "apiKey", 33),
+    ('"STRIPE_SECRET_KEY": "{v}",', "STRIPE_SECRET_KEY", 33),
+    ("supabaseKey: '{v}'", "supabaseKey", 33),
+    ("const SERVICE_TOKEN = `{v}`;", "SERVICE_TOKEN", 33),
+    ('const apiKey: string = "{v}";', "apiKey", 33),
+    ('apiKey := "{v}"', "apiKey", 33),
+    ("'key' => '{v}',", "key", 33),
+    ("API_KEY={v} # live key", "API_KEY", 33),
+    ('{{ apiKey: "{v}" }}', "apiKey", 33),
+    ('client = OpenAI(api_key="{v}")', "api_key", 33),
+    ('#define API_KEY "{v}"', "API_KEY", 33),
+    ("Authorization: Bearer {v}", "Authorization", 33),
+    ('os.environ.get("OPENAI_API_KEY", "{v}")', "OPENAI_API_KEY", 33),
+    ('app.secret_key = "{v}"', "app.secret_key", 33),
+    ("createClient('https://x.example', '{v}')", "createClient", 33),
+    ('const JWT_SECRET = process.env.JWT_SECRET || "{v}";', "JWT_SECRET", 33),
+    ("API_KEY={v} # from https://dashboard.example.com/apikeys", "API_KEY", 33),
+    ('curl -H "Authorization: Bearer {v}" https://api.example.com/stream', "Authorization", 33),
+    ("The key is OPENAI_API_KEY={v}.", "OPENAI_API_KEY", 33),
+    ('const secret = process.env.AUTH0_CLIENT_SECRET || "{v}";', "secret", 33),
+    ('{{"pk": "{v}", "sk": "{v}"}}', "pk", None),
+    ("apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,", "apiKey", None),
+    ("const apiKey = import.meta.env.VITE_OPENAI_API_KEY;", "apiKey", None),
+    ("Authorization: `Bearer ${{process.env.OPENAI_API_KEY}}`", "Authorization", None),
+    ("API_KEY=ab12cd34 # placeholder", "API_KEY", None),
+    ("clientSecret: process.env.AUTH0_CLIENT_SECRET,", "clientSecret", None),
+    ("secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,", "secretAccessKey", None),
+    ("const token = S3_UPLOAD_TOKEN_2026;", "token", None),
+    # Round 4 (N4-1): a key in capitals and digits only is a value, not a name.
+    ("AWS_ACCESS_KEY_ID=AKIAZ7QW3EXAMPLE2X9P", "AWS_ACCESS_KEY_ID", 20),
+    ('new AWS.S3({{ accessKeyId: "AKIAZ7QW3EXAMPLE2X9P", secretAccessKey: "{v}" }})', "accessKeyId", None),
+    ("AWS_ACCESS_KEY_ID=AKIAZ7QW3EXAMPLE2X9P AWS_SECRET_ACCESS_KEY={v} aws s3 sync", "AWS_ACCESS_KEY_ID", None),
+    # Round 4 (R3-2): names in code with a digit, written in other forms.
+    ("AUTH0_CLIENT_SECRET: ${{{{ secrets.AUTH0_CLIENT_SECRET }}}}", "AUTH0_CLIENT_SECRET", None),
+    ("AWS_SECRET_ACCESS_KEY: ${{{{ secrets.S3_SECRET_ACCESS_KEY }}}}", "AWS_SECRET_ACCESS_KEY", None),
+    ("secretKey: settings.AWS_S3_SECRET_ACCESS_KEY,", "secretKey", None),
+    ("client_secret = var.auth0_client_secret", "client_secret", None),
+    ("clientSecret: config.auth0ClientSecret,", "clientSecret", None),
+    ('apiKey: os.getenv("auth0_client_secret"),', "apiKey", None),
+    # Round 4 (N4-3): digits alone are not letters and digits; several full stops; the threshold's edge.
+    ("API_KEY={v} # rotated 2026-11-24", "API_KEY", 33),
+    ("API_KEY={v}...", "API_KEY", 33),
+    ("API_KEY=ab12cd34e", "API_KEY", 9),
+    # Round 5 (N5-1, N5-5): a signed JWT counts in full; a prefixed base62 key; a name only `env.` catches; a
+    # character outside the set ends the piece.
+    (
+        f"SUPABASE_SERVICE_KEY={JWT_HEAD}hbGciOiJIUzI1NiJ9.{JWT_HEAD}yb2xlIjoic2VydmljZSJ9.Zq8xYv3Lm2Np7Rt4Wk9Bc6Hd1",
+        "SUPABASE_SERVICE_KEY",
+        71,
+    ),
+    (f"STRIPE_SECRET_KEY={STRIPE_LIVE}Zq8xYv3Lm2Np7Rt4Wk9Bc6Hd", "STRIPE_SECRET_KEY", 32),
+    ("apiKey: process.env.SERVICE-KEY2,", "apiKey", None),
+    ("API_KEY={v}@host", "API_KEY", 33),
+    # Confirm check (N5-5): a dotted part starting with a digit is not a name in code.
+    ("VALUE=Zq8xYv3Lm2.4Np7Rt4Wk9", "VALUE", 21),
+]
+# Named known limits (S7-49 A): what the rule gives on lines where it is wrong, kept so any change is seen. The full
+# test measures how often such lines occur in real reports. (line form, name, what the rule gives, the truth)
+KNOWN_LIMITS = [
+    # A placeholder followed by a URL in a comment: the URL's last part holds a digit.
+    ("OPENAI_API_KEY=your-key-here # https://api.openai.com/v1/models", "OPENAI_API_KEY", 26, "no key"),
+    # A shell default: the `-` before the value is in the key alphabet.
+    ("api_key: ${{OPENAI_KEY:-{v}}}", "api_key", 34, 33),
+    # An unsigned JWT: its final full stop is dropped, leaving one, so it reads as a dotted name: a safe miss.
+    (f"JWT={JWT_HEAD}hbGciOiJub25lIn0.{JWT_HEAD}zdWIiOiIxMjMifQ.", "JWT", None, 39),
+    # Round 5 (N5-3): names in code the fourth number does not catch give a number for a line with no key.
+    ("clientSecret: auth0ClientSecret,", "clientSecret", 17, "no key"),
+    ("key: s3-secret-key", "key", 13, "no key"),
+    ("PRIVATE_KEY_PATH=./certs/server2.pem", "PRIVATE_KEY_PATH", 19, "no key"),
+    # Round 5 (N5-4): real key shapes that always read as names: a safe miss ("not certain").
+    (f"SHOPIFY_TOKEN={SHOPIFY_PAT}0a1b2c3d4e5f60718293a4b5c6d7e8f9", "SHOPIFY_TOKEN", None, 38),
+    (f"STRIPE_KEY={STRIPE_LIVE}0a1b2c3d4e5f60718293a4b5", "STRIPE_KEY", None, 32),
+    (f"SENDGRID_API_KEY={SENDGRID}Zq8xYv3Lm2Np7Rt4Wk9B.Bc6Hd1Fg5Js0aQw2Er4TyU", "SENDGRID_API_KEY", None, 46),
+]
+
+
+def pieces(line: str) -> list[str]:
+    # The command's field separator applied in Python (the same bracket expression; no escapes in it).
+    separator = re.search(r"-F'(\[.+?\]\+)'", LENGTH_COMMAND)
+    assert separator
+    return re.split(separator.group(1), line)
+
+
+def piece_numbers(piece: str) -> tuple[int, int, int]:
+    # The command's program applied in Python: a full stop at the end dropped; letters and digits; a name in code.
+    p = re.sub(r"[.]+$", "", piece)
+    both = int(bool(re.search("[A-Za-z]", p)) and bool(re.search("[0-9]", p)))
+    name_like = int(bool(re.search(NAME_IN_CODE, p)) and not re.search(JWT_SHAPE, p))
+    return len(p), both, name_like
+
+
+def rule_gives(line: str, name: str) -> int | None:
+    # The rule's mechanical part, read from its own words: after the name, the pieces longer than the threshold with
+    # third number 1 and fourth number 0; exactly one gives its length, otherwise "not certain" (None).
+    threshold = int(re.search(r"longer than (\d+) characters with third number 1 and fourth number 0", LENGTH_RULE)[1])
+    parts = pieces(line)
+    after = parts[parts.index(name) + 1 :]
+    found = [n[0] for n in map(piece_numbers, after) if n[0] > threshold and n[1] == 1 and n[2] == 0]
+    return found[0] if len(found) == 1 else None
+
+
+def test_s7_44_exact_key_length_rule() -> None:
+    limits = flat(section("Hard limits"))
+    assert f"`{LENGTH_COMMAND}`" in limits
+    assert LENGTH_RULE in limits
+    assert LENGTH_SENTENCE in limits
+    assert "its exact length in characters, public-by-design keys too" in limits
+    # PR review round 1 (finding 3) and the S7-44 Windows proof: a double quote breaks it in Windows PowerShell 5.1,
+    # and a backslash escape is read as plain characters when awk is started by a Windows program. A `>` would make
+    # awk's print write a file.
+    command = LENGTH_COMMAND.replace("<line>", "1").replace("<file>", "f")
+    assert '"' not in command and "\\" not in command and ">" not in command, LENGTH_COMMAND
+    report = flat(section("Report"))
+    assert 'named by kind, file, line and exact length (or "length not certain" where the hard limits say so)' in report
+
+
+def test_s7_44_the_rule_gives_the_value_or_not_certain() -> None:
+    assert len(LONG_DUMMY) == 33
+    for form, name, expected in RULE_CASES:
+        line = form.format(v=LONG_DUMMY)
+        assert rule_gives(line, name) == expected, (line, [piece_numbers(p) for p in pieces(line)])
+
+
+def test_s7_44_known_limits_stay_as_named() -> None:
+    for form, name, gives, truth in KNOWN_LIMITS:
+        line = form.format(v=LONG_DUMMY)
+        assert rule_gives(line, name) == gives, (line, [piece_numbers(p) for p in pieces(line)])
+        assert gives != truth
+
+
+def test_s7_44_length_command_runs_and_prints_only_numbers(tmp_path: Path) -> None:
+    awk = shutil.which("awk")
+    if awk is None:
+        pytest.skip("no awk on this system")
+    lines = [form.format(v=LONG_DUMMY) for form, *_ in RULE_CASES + KNOWN_LIMITS]
+    path = tmp_path / "keys.txt"
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    separator, program = re.fullmatch(r"awk -F'(.+?)' '(.+?)' <file>", LENGTH_COMMAND).groups()
+    for number, line in enumerate(lines, 1):
+        run = subprocess.run(
+            [awk, "-F", separator, program.replace("<line>", str(number)), str(path)],
+            capture_output=True,
+            text=True,
+            check=True,
+            cwd=tmp_path,
+        )
+        output = run.stdout.splitlines()
+        assert output and all(re.fullmatch(r"\d+ \d+ [01] [01]", row) for row in output), (line, run.stdout)
+        assert LONG_DUMMY[3:11] not in run.stdout
+        expected = [f"{i} {' '.join(map(str, piece_numbers(part)))}" for i, part in enumerate(pieces(line), 1)]
+        assert output == expected, (line, run.stdout)
+    assert sorted(p.name for p in tmp_path.iterdir()) == ["keys.txt"], "the command wrote a file"
+
+
+def test_s7_44_one_effort_per_finding() -> None:
+    assert "Fix: plain words. Effort: one word: small, medium or large." in report_template()
+    report = flat(section("Report"))
+    assert "Each finding has one effort" in report
+    assert "when its fix has two parts or offers a choice, give the effort of the fix you recommend" in report
+    assert "never a range or two sizes" in report
