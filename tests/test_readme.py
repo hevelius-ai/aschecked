@@ -1007,6 +1007,9 @@ def test_s7_60_facts_without_downplaying() -> None:
     assert 'ran on the version of 22 Nov 2026 (called "released version" there)' in how
     assert "| Cursor (2 of 8; the other six did not run) |" in how
     assert "Plan mode blocks Claude's edits but not every shell command." in flat(doc("git-safety.md"))
+    # S7-62 (owner, 25 Nov 2026): the README's "More" line for other tools carries no verdict.
+    assert "- [Other AI tools in detail](docs/other-tools.md).\n" in text()
+    assert "fell short" not in text()
 
 
 def test_s7_59_no_fixed_problem_or_tool_limit_is_told() -> None:
