@@ -277,7 +277,6 @@ models built the apps, checked the answer keys and scored the reports. The real 
 We reviewed one GitHub project, our own website's repository, in a Claude Code cloud session: Claude Opus 5.5 at
 medium effort, Auto mode, the prompt file `paste/aschecked-prompt.md` attached and nothing installed. The report had
 every required part, the four citations we checked against the repository each said what the report claimed, no key
-value appeared, and nothing in the project changed (`git status` showed nothing). The session's git refused one of
-AsChecked's safety settings, so AsChecked ran no git commands: it did not search past commits for keys or check other
-branches, and the report said so under "Not checked". Installing AsChecked as a skill does not work in a cloud
-session: it can download only from the repository it is attached to, and it does not keep an install.
+value appeared, and nothing in the project changed (our own `git status` after the report showed nothing). The
+session's git refused one of AsChecked's safety settings, so AsChecked ran no git commands: it did not search past
+commits for keys or check other branches, and the report said so under "Not checked".
